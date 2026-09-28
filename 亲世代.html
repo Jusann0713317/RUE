@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>霍格沃兹人生模拟器 · 亲世代</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f4fbf6; --bg-dot:#d6ebe0; --card:#fff; --ink:#5b4a44; --ink-light:#8b7b75;
+  --pink:#fadce1; --yellow:#fdf2ce; --mint:#d5f0e2; --lavender:#e4d5ef; --peach:#ffe0c7;
+  --gryf:#f4c9c9; --slyt:#c9d4f4; --huff:#f4e5c9; --rave:#d4c9f4;
+  --border:2.5px solid var(--ink);
+  --shadow-sm:3px 3px 0 var(--ink); --shadow-lg:5px 5px 0 var(--ink);
+  --radius:20px; --radius-sm:12px; --radius-round:50px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Quicksand',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:#b8d8c8; background-image:radial-gradient(#9bc4b1 1px,transparent 1px); background-size:20px 20px;
+  min-height:100vh; display:flex; align-items:center; justify-content:center; color:var(--ink);
+}
+#phone {
+  width:100%; max-width:430px; height:100vh; max-height:900px;
+  background:var(--bg); background-image:radial-gradient(var(--bg-dot) 1.5px,transparent 1.5px); background-size:16px 16px;
+  border:var(--border); border-radius:40px;
+  box-shadow:var(--shadow-lg),0 20px 50px rgba(91,74,68,.2);
+  display:flex; flex-direction:column; overflow:hidden; position:relative;
+}
+@media (max-width:450px){ #phone{border-radius:0;border:none;box-shadow:none;height:100vh;max-height:100vh;} }
+
+.app-header { height:60px;background:var(--card);border-bottom:var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:10;position:relative; }
+.header-title { flex:1;font-weight:700;font-size:15px; }
+.header-avatar { width:34px;height:34px;border-radius:var(--radius-round);border:var(--border);background:var(--yellow);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:var(--shadow-sm); }
+.header-avatar img { width:100%;height:100%;object-fit:cover; }
+.header-btn { width:38px;height:38px;border:var(--border);background:var(--card);border-radius:var(--radius-sm);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);transition:.1s;color:var(--ink);position:relative; }
+.header-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.header-btn .badge { position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#e46a6a;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700; }
+
+.status-strip { height:34px;background:var(--yellow);border-bottom:var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;font-size:11.5px;font-weight:700;flex-shrink:0;overflow-x:auto; }
+.status-strip::-webkit-scrollbar { height:0; }
+.status-strip b { background:var(--card);padding:2px 8px;border-radius:10px;border:1.5px solid var(--ink);white-space:nowrap; }
+
+.page-container { flex:1;position:relative;overflow:hidden; }
+.page { position:absolute;inset:0;display:none;flex-direction:column; }
+.page.active { display:flex; }
+.scroll-area { flex:1;overflow-y:auto;padding:18px 16px;-webkit-overflow-scrolling:touch; }
+.scroll-area::-webkit-scrollbar { width:0; }
+
+.bottom-nav { height:75px;background:var(--card);border-top:var(--border);display:flex;padding:8px;gap:4px;flex-shrink:0;z-index:10; }
+.nav-item { flex:1;background:transparent;border:2px solid transparent;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-family:inherit;transition:.15s;color:var(--ink-light); }
+.nav-item:active { transform:scale(.92); }
+.nav-icon { font-size:22px;line-height:1; }
+.nav-label { font-size:10.5px;font-weight:700; }
+.nav-item.active { background:var(--mint);border-color:var(--ink);box-shadow:var(--shadow-sm);color:var(--ink); }
+
+.subpage { position:absolute;inset:0;background:var(--bg);background-image:radial-gradient(var(--bg-dot) 1.5px,transparent 1.5px);background-size:16px 16px;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:20; }
+.subpage.active { transform:translateX(0); }
+.subpage-header { height:60px;background:var(--card);border-bottom:var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0; }
+.back-btn { width:38px;height:38px;border:var(--border);background:var(--card);border-radius:var(--radius-sm);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);font-family:inherit;font-weight:700;color:var(--ink);transition:.1s; }
+.back-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.subpage-title { flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.subpage-action { padding:8px 12px;background:var(--mint);border:2px solid var(--ink);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);color:var(--ink); }
+.subpage-action:active { transform:translate(2px,2px);box-shadow:none; }
+
+.section-title { font-size:13px;font-weight:700;margin:18px 4px 10px;display:flex;align-items:center;gap:6px;background:var(--card);padding:6px 12px;border-radius:var(--radius-round);border:1.5px solid var(--ink);box-shadow:1.5px 1.5px 0 var(--ink);width:fit-content; }
+.section-title:first-child { margin-top:4px; }
+.tag-label { display:inline-block;background:var(--pink);font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--radius-round);border:1.5px solid var(--ink);box-shadow:1.5px 1.5px 0 var(--ink);margin-bottom:8px; }
+
+.hero { background:var(--mint);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:20px;margin-bottom:16px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;position:relative; }
+.hero::after { content:'✨';position:absolute;top:15px;right:20px;font-size:24px; }
+.hero-avatar { width:80px;height:80px;border-radius:var(--radius-round);border:var(--border);background:var(--card);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;box-shadow:var(--shadow-sm); }
+.hero-avatar img { width:100%;height:100%;object-fit:cover; }
+.hero-name { font-size:24px;font-weight:700;line-height:1.2; }
+.hero-sub { font-size:12px;font-weight:700;color:var(--ink-light); }
+
+.info-list { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:4px 16px;margin-bottom:14px; }
+.info-row { display:flex;align-items:center;padding:12px 0;gap:10px;font-size:13px; }
+.info-row + .info-row { border-top:1.5px dashed var(--ink-light); }
+.info-row .lbl { flex:1;font-weight:700;color:var(--ink-light); }
+.info-row .val { font-weight:700;text-align:right; }
+.info-icon { font-size:16px;width:22px;text-align:center; }
+
+.stats-block { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px;margin-bottom:14px; }
+.stat-line { display:flex;align-items:center;gap:12px;margin-bottom:12px; }
+.stat-line:last-child { margin-bottom:0; }
+.stat-name { width:60px;font-weight:700;font-size:13px; }
+.stat-bar { flex:1;height:12px;background:var(--bg);border:2px solid var(--ink);border-radius:8px;overflow:hidden; }
+.stat-fill { height:100%;transition:.4s; }
+.stat-fill.hp { background:repeating-linear-gradient(45deg,#f7a2b4,#f7a2b4 5px,#fadce1 5px,#fadce1 10px); }
+.stat-fill.mp { background:repeating-linear-gradient(45deg,#a5b8d4,#a5b8d4 5px,#d5e2f0 5px,#d5e2f0 10px); }
+.stat-fill.sp { background:repeating-linear-gradient(45deg,#b5c4a5,#b5c4a5 5px,#d5f0e2 5px,#d5f0e2 10px); }
+.stat-val { width:40px;text-align:right;font-weight:700;font-size:12px; }
+
+.recent-card { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px;margin-bottom:14px;cursor:pointer;position:relative;overflow:hidden;max-height:120px; }
+.recent-card .rs-time { font-size:11px;color:var(--ink-light);font-weight:700;margin-bottom:6px; }
+.recent-card .rs-text { font-size:13px;line-height:1.6; }
+.recent-card::after { content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--card)); }
+
+.quick-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.quick-card { background:var(--card);border:var(--border);border-radius:var(--radius);padding:16px 14px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px;transition:.1s;color:var(--ink);text-align:left; }
+.quick-card:active { transform:translate(2px,2px);box-shadow:none; }
+.quick-card:nth-child(1) { background:var(--yellow); }
+.quick-card:nth-child(2) { background:var(--pink); }
+.quick-card:nth-child(3) { background:var(--lavender); }
+.quick-card:nth-child(4) { background:var(--mint); }
+.quick-icon { font-size:20px; }
+.quick-text { font-weight:700;font-size:13px; }
+
+.story-scroll { flex:1;overflow-y:auto;padding:18px 16px 8px; }
+.story-scroll::-webkit-scrollbar { width:0; }
+.story-entry { padding:14px 16px;border-radius:var(--radius);margin-bottom:12px;line-height:1.7;font-size:13.5px;border:var(--border);box-shadow:var(--shadow-sm);animation:fadeIn .4s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+.story-entry.narration { background:var(--card); }
+.story-entry.action { background:var(--yellow);font-style:italic; }
+.story-entry.action::before { content:'▸ ';font-weight:700; }
+.story-entry.cg { background:var(--pink);text-align:center;padding:20px; }
+.story-entry.cg .cg-title { font-size:15px;font-weight:700;letter-spacing:1px;margin-bottom:6px; }
+.story-entry .timestamp { display:block;font-size:10px;color:var(--ink-light);font-weight:700;margin-bottom:6px;font-family:monospace; }
+.story-entry .speaker { font-weight:700;color:var(--ink); }
+
+.story-input-area { border-top:var(--border);background:var(--card);padding:12px 14px 14px;flex-shrink:0; }
+.quick-chips { display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px; }
+.quick-chips::-webkit-scrollbar { height:0; }
+.chip { background:var(--card);border:2px solid var(--ink);padding:6px 14px;border-radius:var(--radius-round);font-family:inherit;font-size:11.5px;font-weight:700;white-space:nowrap;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s;color:var(--ink); }
+.chip:active { transform:translate(2px,2px);box-shadow:none; }
+.input-row { display:flex;gap:10px; }
+.input-row input { flex:1;background:var(--bg);border:var(--border);padding:12px 16px;border-radius:var(--radius-sm);font-family:inherit;font-size:13.5px;outline:none;font-weight:700;color:var(--ink); }
+.input-row input::placeholder { color:var(--ink-light);font-weight:600; }
+.send-btn { background:var(--pink);border:var(--border);padding:0 20px;border-radius:var(--radius-sm);cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;box-shadow:var(--shadow-sm);transition:.1s;color:var(--ink); }
+.send-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.send-btn:disabled { opacity:.5;cursor:not-allowed; }
+
+.writing { display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--card);border:var(--border) dashed;border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow-sm);font-size:12.5px;font-weight:700; }
+.writing .dot { width:6px;height:6px;border-radius:50%;background:var(--ink);animation:bounce 1.4s infinite; }
+.writing .dot:nth-child(2){animation-delay:.2s;} .writing .dot:nth-child(3){animation-delay:.4s;}
+@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-6px);opacity:1;} }
+
+.romance-pager { flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column; }
+.romance-track { flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch; }
+.romance-track::-webkit-scrollbar { display:none; }
+.romance-slide { flex:0 0 100%;scroll-snap-align:center;padding:16px 16px 24px;display:flex;flex-direction:column;gap:12px;overflow-y:auto; }
+.romance-slide::-webkit-scrollbar { display:none; }
+.pager-indicator { display:flex;justify-content:center;gap:6px;padding:10px 0 14px;flex-shrink:0; }
+.pager-dot { width:8px;height:8px;border-radius:50%;background:var(--ink-light);border:1.5px solid var(--ink);opacity:.4;transition:.2s;cursor:pointer; }
+.pager-dot.active { opacity:1;background:var(--pink);width:24px;border-radius:5px; }
+
+.portrait-card { width:100%;aspect-ratio:3/4;border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);background:linear-gradient(180deg,var(--mint),var(--lavender));overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative; }
+.portrait-card img { width:100%;height:100%;object-fit:cover; }
+.portrait-empty { display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink);font-size:13px;font-weight:700;opacity:.7; }
+.portrait-empty .big-emoji { font-size:64px; }
+.portrait-upload { position:absolute;bottom:12px;right:12px;background:var(--card);border:2px solid var(--ink);border-radius:var(--radius-round);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s; }
+.portrait-upload:active { transform:translate(2px,2px);box-shadow:none; }
+
+.romance-info { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px;display:flex;align-items:center;gap:14px; }
+.romance-avatar { width:62px;height:62px;border-radius:var(--radius-round);border:var(--border);background:var(--yellow);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:var(--shadow-sm);position:relative; }
+.romance-avatar img { width:100%;height:100%;object-fit:cover; }
+.romance-meta { flex:1;min-width:0; }
+.romance-name { font-weight:700;font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+.romance-house { font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:var(--radius-round);border:1.5px solid var(--ink);display:inline-block; }
+.romance-mood { font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:var(--radius-round);border:1.5px solid var(--ink);display:inline-block;background:var(--pink); }
+.mini-upload { position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--pink);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer; }
+.romance-bar-outer { height:12px;background:var(--bg);border:2px solid var(--ink);border-radius:8px;overflow:hidden;margin:10px 0 6px; }
+.romance-bar-inner { height:100%;background:repeating-linear-gradient(45deg,#f7a2b4,#f7a2b4 5px,#fadce1 5px,#fadce1 10px);transition:.4s; }
+.romance-stage { font-size:12px;font-weight:700;color:var(--ink-light);display:flex;justify-content:space-between; }
+.romance-actions { display:flex;gap:10px; }
+
+.bag-tabs { display:flex;gap:8px;padding:14px 16px 8px;overflow-x:auto;flex-shrink:0; }
+.bag-tabs::-webkit-scrollbar { height:0; }
+.bag-tab { background:var(--card);border:var(--border);color:var(--ink-light);padding:8px 16px;border-radius:var(--radius-round);font-family:inherit;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;box-shadow:var(--shadow-sm);transition:.1s; }
+.bag-tab.active { background:var(--yellow);color:var(--ink); }
+.item-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.item-card { background:var(--card);border:var(--border);border-radius:var(--radius);padding:16px 10px;box-shadow:var(--shadow-sm);cursor:pointer;transition:.1s;text-align:center; }
+.item-card:active { transform:translate(2px,2px);box-shadow:none; }
+.item-icon { font-size:28px;margin-bottom:8px; }
+.item-name { font-weight:700;font-size:12px;line-height:1.4; }
+
+.social-tabs { display:flex;padding:14px 16px 8px;gap:8px;flex-shrink:0; }
+.social-tab { flex:1;background:var(--card);border:var(--border);color:var(--ink-light);padding:10px 4px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;border-radius:var(--radius-sm);transition:.1s; }
+.social-tab.active { background:var(--mint);color:var(--ink);box-shadow:var(--shadow-sm);transform:translateY(-2px); }
+
+.compose-card { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px;margin-bottom:14px; }
+.compose-top { display:flex;gap:10px;align-items:flex-start; }
+.compose-avatar { width:40px;height:40px;border-radius:var(--radius-round);border:2px solid var(--ink);background:var(--yellow);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+.compose-avatar img { width:100%;height:100%;object-fit:cover; }
+.compose-input { flex:1;background:var(--bg);border:var(--border);padding:10px 14px;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:700;resize:none;min-height:60px;outline:none;color:var(--ink); }
+.compose-input::placeholder { color:var(--ink-light);font-weight:600; }
+.compose-actions { display:flex;justify-content:flex-end;margin-top:10px; }
+
+.feed-post { background:var(--card);border:var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm);animation:fadeIn .35s ease; }
+.feed-header { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+.feed-avatar { width:40px;height:40px;border-radius:var(--radius-round);background:var(--lavender);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0; }
+.feed-avatar img { width:100%;height:100%;object-fit:cover; }
+.feed-meta { flex:1; }
+.feed-name { font-weight:700;font-size:13.5px; }
+.feed-time { font-size:10.5px;color:var(--ink-light);font-weight:700; }
+.feed-body { font-size:13.5px;line-height:1.7;margin-bottom:12px;white-space:pre-wrap; }
+.feed-actions { display:flex;gap:14px;border-top:1.5px dashed var(--ink-light);padding-top:10px; }
+.feed-action { background:transparent;border:none;color:var(--ink-light);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;padding:2px 4px; }
+.feed-action.liked { color:#d17b8c; }
+.feed-comments { background:var(--bg);border-top:1.5px dashed var(--ink-light);margin-top:10px;padding-top:10px;display:flex;flex-direction:column;gap:8px; }
+.feed-comment { display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.55; }
+.comment-avatar { width:26px;height:26px;border-radius:var(--radius-round);border:1.5px solid var(--ink);background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;overflow:hidden; }
+.comment-avatar img { width:100%;height:100%;object-fit:cover; }
+.comment-bubble { flex:1;background:var(--card);border:1.5px solid var(--ink);border-radius:10px;padding:6px 10px; }
+.comment-name { font-weight:700;color:var(--ink); }
+.comment-text { color:var(--ink); }
+.comment-reply { color:var(--ink-light); }
+.comment-input-row { display:flex;gap:8px;margin-top:4px; }
+.comment-input-row input { flex:1;background:var(--card);border:2px solid var(--ink);padding:8px 12px;border-radius:10px;font-family:inherit;font-size:12.5px;font-weight:700;outline:none;color:var(--ink); }
+.comment-send { background:var(--pink);border:2px solid var(--ink);padding:0 14px;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s;color:var(--ink); }
+.comment-send:active { transform:translate(2px,2px);box-shadow:none; }
+
+.contact-row { display:flex;align-items:center;gap:14px;background:var(--card);border:var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm);cursor:pointer; }
+.contact-row:active { transform:translate(2px,2px);box-shadow:none; }
+.contact-avatar { width:46px;height:46px;border-radius:var(--radius-round);background:var(--yellow);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden; }
+.contact-avatar img { width:100%;height:100%;object-fit:cover; }
+.contact-info { flex:1;min-width:0; }
+.contact-name { font-weight:700;font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px; }
+.contact-last { font-size:11.5px;color:var(--ink-light);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.contact-aff { font-weight:700;font-size:13px;padding:4px 10px;background:var(--pink);border:1.5px solid var(--ink);border-radius:var(--radius-round); }
+
+.group-card { background:var(--card);border:var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm); }
+.group-head { display:flex;align-items:center;gap:10px;margin-bottom:8px; }
+.group-icon { width:44px;height:44px;border-radius:var(--radius-sm);background:var(--lavender);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+.group-info { flex:1;min-width:0; }
+.group-name { font-weight:700;font-size:14px;margin-bottom:2px; }
+.group-members { font-size:11px;color:var(--ink-light);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.group-actions { display:flex;gap:8px;margin-top:10px; }
+.group-btn { flex:1;padding:8px;background:var(--mint);border:2px solid var(--ink);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.1s;color:var(--ink); }
+.group-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.group-btn.alt { background:var(--yellow); }
+
+.detail-hero { background:var(--mint);border:var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:16px;margin-bottom:16px; }
+.detail-avatar { width:70px;height:70px;border-radius:var(--radius-round);background:var(--card);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;overflow:hidden; }
+.detail-avatar img { width:100%;height:100%;object-fit:cover; }
+.detail-name { font-weight:700;font-size:18px;margin-bottom:6px; }
+.detail-meta { font-size:12px;font-weight:700;color:var(--ink-light);display:flex;gap:6px;flex-wrap:wrap; }
+.detail-section { background:var(--card);border:var(--border) dashed;border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm); }
+.detail-section h4 { font-size:12px;font-weight:700;color:var(--ink-light);letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:1.5px dashed var(--ink-light); }
+.detail-persona { font-size:13px;line-height:1.8; }
+.detail-log { font-size:12.5px;line-height:1.7;color:var(--ink-light);padding:10px 0;border-bottom:1px dashed var(--ink-light); }
+.detail-log:last-child { border-bottom:none; }
+.detail-log .log-time { font-size:10px;font-weight:700;display:block;margin-bottom:4px; }
+.detail-actions { display:flex;gap:12px;margin-top:8px; }
+.big-btn { flex:1;background:var(--yellow);border:var(--border);padding:14px;border-radius:var(--radius-sm);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--shadow-sm);transition:.1s;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink); }
+.big-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.big-btn.accent { background:var(--pink); }
+.big-btn.alt { background:var(--mint); }
+
+.chat-log { flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px; }
+.chat-msg { max-width:80%;padding:12px 16px;border-radius:var(--radius);font-size:13.5px;line-height:1.6;font-weight:700;border:var(--border);box-shadow:var(--shadow-sm);word-wrap:break-word;animation:fadeIn .3s ease; }
+.chat-msg.me { align-self:flex-end;background:var(--pink);border-bottom-right-radius:4px; }
+.chat-msg.npc { align-self:flex-start;background:var(--card);border-bottom-left-radius:4px; }
+.chat-msg.npc .chat-speaker { font-size:11.5px;color:var(--ink-light);font-weight:700;display:block;margin-bottom:4px; }
+.chat-input-area { border-top:var(--border);background:var(--card);padding:12px 14px;display:flex;gap:10px;flex-shrink:0; }
+.chat-input-area input { flex:1;background:var(--bg);border:var(--border);padding:12px 16px;border-radius:var(--radius-sm);font-family:inherit;font-size:13.5px;font-weight:700;outline:none;color:var(--ink); }
+
+.settings-item { background:var(--card);border:var(--border) dashed;border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow-sm); }
+.settings-item label { display:block;font-size:11.5px;font-weight:700;color:var(--ink-light);margin-bottom:8px; }
+.settings-item input, .settings-item textarea { width:100%;background:var(--bg);border:var(--border);padding:12px;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:700;outline:none;color:var(--ink);resize:none; }
+.settings-action { display:flex;gap:10px;margin-bottom:10px; }
+
+.empty { text-align:center;padding:40px 20px;color:var(--ink-light);font-size:13px;font-weight:700; }
+.empty .empty-icon { font-size:40px;margin-bottom:12px;display:block; }
+
+#onboarding { position:absolute;inset:0;background:var(--bg);background-image:radial-gradient(var(--bg-dot) 1.5px,transparent 1.5px);background-size:16px 16px;z-index:100;display:none;flex-direction:column; }
+#onboarding.active { display:flex; }
+.ob-header { height:60px;background:var(--card);border-bottom:var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0; }
+.ob-step { flex:1;font-size:13px;font-weight:700; }
+.ob-progress { width:100px;height:10px;background:var(--bg);border:2px solid var(--ink);border-radius:6px;overflow:hidden; }
+.ob-progress-fill { height:100%;background:var(--pink);border-radius:4px;transition:.3s; }
+.ob-content { flex:1;overflow-y:auto;padding:24px 20px; }
+.ob-content::-webkit-scrollbar { width:0; }
+.ob-title { font-size:22px;font-weight:700;margin-bottom:8px; }
+.ob-subtitle { font-size:13px;font-weight:700;color:var(--ink-light);margin-bottom:24px;line-height:1.5; }
+.ob-field { margin-bottom:20px; }
+.ob-field label { display:block;font-size:12px;font-weight:700;color:var(--ink-light);margin-bottom:10px; }
+.ob-field input[type="text"] { width:100%;background:var(--card);border:var(--border);padding:14px;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:700;outline:none;box-shadow:var(--shadow-sm);color:var(--ink); }
+.ob-options { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.ob-option { background:var(--card);border:var(--border);color:var(--ink-light);padding:14px 12px;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.1s;text-align:center;box-shadow:var(--shadow-sm); }
+.ob-option:active { transform:translate(2px,2px); }
+.ob-option.selected { background:var(--yellow);color:var(--ink);transform:translateY(-2px); }
+.ob-option.house-gryf.selected { background:var(--gryf); }
+.ob-option.house-slyt.selected { background:var(--slyt); }
+.ob-option.house-huff.selected { background:var(--huff); }
+.ob-option.house-rave.selected { background:var(--rave); }
+.ob-avatar-upload { display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px;background:var(--card);border:var(--border) dashed;border-radius:var(--radius);margin-bottom:20px;box-shadow:var(--shadow-sm); }
+.ob-avatar-preview { width:110px;height:110px;border-radius:var(--radius-round);background:var(--mint);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden;box-shadow:var(--shadow-sm); }
+.ob-avatar-preview img { width:100%;height:100%;object-fit:cover; }
+.upload-btn { background:var(--pink);border:var(--border);padding:10px 20px;border-radius:var(--radius-round);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);transition:.1s; }
+.upload-btn:active { transform:translate(2px,2px);box-shadow:none; }
+.ob-footer { padding:16px 20px 24px;border-top:var(--border);background:var(--card);display:flex;gap:12px;flex-shrink:0; }
+
+.toast { position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 20px;border-radius:var(--radius-round);font-size:12.5px;font-weight:700;z-index:200;opacity:0;transition:.3s;pointer-events:none;box-shadow:3px 3px 0 rgba(0,0,0,.2);max-width:80%;text-align:center; }
+.toast.show { opacity:1; }
+
+.modal-overlay { position:absolute;inset:0;background:rgba(91,74,68,.5);z-index:150;display:none;align-items:center;justify-content:center;padding:20px; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:20px;max-width:380px;width:100%;max-height:80%;overflow-y:auto; }
+.modal h3 { font-size:16px;font-weight:700;margin-bottom:14px; }
+.modal .modal-actions { display:flex;gap:10px;margin-top:14px; }
+.gift-item { display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border:2px solid var(--ink);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:.1s; }
+.gift-item:hover { transform:translateY(-1px); }
+.gift-item .gift-icon { font-size:22px; }
+.gift-item .gift-name { flex:1;font-weight:700;font-size:13px; }
+
+/* 世界线因果图 */
+.worldline-tree { display:flex;flex-direction:column;gap:12px;position:relative; }
+.node { background:var(--card);border:var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);position:relative; }
+.node.rewritten { background:linear-gradient(135deg,var(--pink),var(--yellow)); }
+.node .node-year { font-size:11px;font-weight:700;color:var(--ink-light);margin-bottom:4px; }
+.node .node-name { font-size:14px;font-weight:700;margin-bottom:6px; }
+.node .node-desc { font-size:12px;line-height:1.6;color:var(--ink-light); }
+.node .node-badge { position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--radius-round);border:1.5px solid var(--ink);background:var(--mint); }
+.node.rewritten .node-badge { background:#fff; }
+
+.house-tag { display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;border:1px solid var(--ink); }
+.house-tag.gryf { background:var(--gryf); }
+.house-tag.slyt { background:var(--slyt); }
+.house-tag.huff { background:var(--huff); }
+.house-tag.rave { background:var(--rave); }
+</style>
+</head>
+<body>
+
+<div id="phone">
+
+  <div class="app-header">
+    <div class="header-avatar" id="headerAvatar">🪄</div>
+    <div class="header-title" id="headerTitle">霍格沃兹 · 亲世代</div>
+    <button class="header-btn" onclick="showNotifications()" id="notifBtn">🔔</button>
+    <button class="header-btn" onclick="openSubpage('settings')">⚙️</button>
+  </div>
+
+  <div class="status-strip" id="statusStrip">
+    <div>📅 <b id="topTime">1971.9.1</b></div>
+    <div>🌍 <b id="topWorldline">0.00%</b></div>
+  </div>
+
+  <div class="page-container">
+
+    <!-- 首页 -->
+    <div class="page active" data-page="home">
+      <div class="scroll-area">
+        <div class="hero">
+          <div class="tag-label">✨ 欢迎来到霍格沃茨</div>
+          <div class="hero-avatar" id="heroAvatar" onclick="openSubpage('profile')">🪄</div>
+          <div class="hero-name" id="heroName">未来的巫师</div>
+          <div class="hero-sub" id="heroSub">1971 · 亲世代</div>
+        </div>
+        <div class="section-title">📌 当前状态</div>
+        <div class="info-list">
+          <div class="info-row"><span class="info-icon">📅</span><span class="lbl">时间</span><span class="val" id="homeTime">1971年9月1日</span></div>
+          <div class="info-row"><span class="info-icon">🏰</span><span class="lbl">学院</span><span class="val" id="homeHouse">未分院</span></div>
+          <div class="info-row"><span class="info-icon">🌍</span><span class="lbl">世界线变动</span><span class="val" id="homeWorldline">0.00%</span></div>
+          <div class="info-row"><span class="info-icon">💕</span><span class="lbl">恋爱状态</span><span class="val" id="homeRomance">单身</span></div>
+        </div>
+        <div class="section-title">📊 属性</div>
+        <div class="stats-block">
+          <div class="stat-line"><span class="stat-name">❤️ 体力</span><div class="stat-bar"><div class="stat-fill hp" id="homeHp" style="width:100%"></div></div><span class="stat-val" id="homeHpV">100</span></div>
+          <div class="stat-line"><span class="stat-name">🔮 魔力</span><div class="stat-bar"><div class="stat-fill mp" id="homeMp" style="width:100%"></div></div><span class="stat-val" id="homeMpV">100</span></div>
+          <div class="stat-line"><span class="stat-name">🧠 精神</span><div class="stat-bar"><div class="stat-fill sp" id="homeSp" style="width:100%"></div></div><span class="stat-val" id="homeSpV">100</span></div>
+        </div>
+        <div class="section-title">📖 最近剧情</div>
+        <div class="recent-card" id="homeRecent" onclick="switchPage('story')">
+          <div class="rs-time">—</div><div class="rs-text">还没有开始你的故事……</div>
+        </div>
+        <div class="section-title">⚡ 快捷入口</div>
+        <div class="quick-grid">
+          <button class="quick-card" onclick="switchPage('story')"><span class="quick-icon">📖</span><span class="quick-text">继续剧情</span></button>
+          <button class="quick-card" onclick="switchPage('characters')"><span class="quick-icon">💕</span><span class="quick-text">攻略对象</span></button>
+          <button class="quick-card" onclick="openSubpage('worldline')"><span class="quick-icon">🌍</span><span class="quick-text">世界线</span></button>
+          <button class="quick-card" onclick="openSubpage('settings')"><span class="quick-icon">⚙️</span><span class="quick-text">设置</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 剧情 -->
+    <div class="page" data-page="story">
+      <div class="story-scroll" id="storyStream"></div>
+      <div class="story-input-area">
+        <div class="quick-chips">
+          <button class="chip" onclick="quickAction('观察四周')">👁️ 观察四周</button>
+          <button class="chip" onclick="quickAction('继续')">➡️ 继续</button>
+          <button class="chip" onclick="quickAction('看看在场的人')">👥 在场的人</button>
+          <button class="chip" onclick="quickAction('回想刚才的事')">💭 回想</button>
+        </div>
+        <div class="input-row">
+          <input type="text" id="actionInput" placeholder="你想做什么？说什么？" onkeydown="if(event.key==='Enter')submitAction()">
+          <button class="send-btn" id="submitBtn" onclick="submitAction()">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 角色 -->
+    <div class="page" data-page="characters">
+      <div class="romance-pager">
+        <div class="romance-track" id="romanceTrack" onscroll="onRomanceScroll()"></div>
+        <div class="pager-indicator" id="pagerIndicator"></div>
+      </div>
+    </div>
+
+    <!-- 背包 -->
+    <div class="page" data-page="bag">
+      <div class="bag-tabs" id="bagTabs"></div>
+      <div class="scroll-area"><div class="item-grid" id="itemGrid"></div></div>
+    </div>
+
+    <!-- 社交 -->
+    <div class="page" data-page="social">
+      <div class="social-tabs">
+        <button class="social-tab active" data-tab="feed" onclick="switchSocialTab('feed')">💬 朋友圈</button>
+        <button class="social-tab" data-tab="contacts" onclick="switchSocialTab('contacts')">📇 通讯录</button>
+        <button class="social-tab" data-tab="groups" onclick="switchSocialTab('groups')">👥 群聊</button>
+      </div>
+      <div class="scroll-area">
+        <div id="feedView"></div>
+        <div id="contactsView" style="display:none;"></div>
+        <div id="groupsView" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- 子页面：角色详情 -->
+    <div class="subpage" id="sub-char-detail">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('char-detail')">←</button><div class="subpage-title" id="cdTitle">角色详情</div></div>
+      <div class="scroll-area" id="cdContent"></div>
+    </div>
+
+    <!-- 子页面：私聊 -->
+    <div class="subpage" id="sub-chat">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('chat')">←</button><div class="subpage-title" id="chatTitle">私聊</div></div>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="说点什么…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="send-btn" onclick="sendChat()">发送</button>
+      </div>
+    </div>
+
+    <!-- 子页面：群聊 -->
+    <div class="subpage" id="sub-group-chat">
+      <div class="subpage-header">
+        <button class="back-btn" onclick="closeSubpage('group-chat')">←</button>
+        <div class="subpage-title" id="gcTitle">群聊</div>
+        <button class="subpage-action" onclick="renameCurrentGroup()">✏️ 改名</button>
+      </div>
+      <div class="chat-log" id="groupChatLog"></div>
+      <div class="chat-input-area">
+        <input type="text" id="groupChatInput" placeholder="在群里说点什么…" onkeydown="if(event.key==='Enter')sendGroupChat()">
+        <button class="send-btn" onclick="sendGroupChat()">发送</button>
+      </div>
+    </div>
+
+    <!-- 子页面：物品详情 -->
+    <div class="subpage" id="sub-item-detail">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('item-detail')">←</button><div class="subpage-title">物品详情</div></div>
+      <div class="scroll-area" id="idContent"></div>
+    </div>
+
+    <!-- 子页面：个人档案 -->
+    <div class="subpage" id="sub-profile">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('profile')">←</button><div class="subpage-title">👤 个人档案</div></div>
+      <div class="scroll-area" id="profileContent"></div>
+    </div>
+
+    <!-- 子页面：世界线 -->
+    <div class="subpage" id="sub-worldline">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('worldline')">←</button><div class="subpage-title">🌍 世界线因果图</div></div>
+      <div class="scroll-area" id="worldlineContent"></div>
+    </div>
+
+    <!-- 子页面：通知 -->
+    <div class="subpage" id="sub-notifications">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('notifications')">←</button><div class="subpage-title">🔔 通知</div></div>
+      <div class="scroll-area" id="notifContent"></div>
+    </div>
+
+    <!-- 子页面：设置 -->
+    <div class="subpage" id="sub-settings">
+      <div class="subpage-header"><button class="back-btn" onclick="closeSubpage('settings')">←</button><div class="subpage-title">⚙️ 设置</div></div>
+      <div class="scroll-area">
+        <div class="section-title">🔌 API 配置</div>
+        <div class="settings-item"><label>API 端点(OpenAI 兼容)</label><input type="text" id="cfgBaseUrl" placeholder="https://api.openai.com/v1"></div>
+        <div class="settings-item"><label>API Key</label><input type="password" id="cfgApiKey" placeholder="sk-..."></div>
+        <div class="settings-item"><label>模型名称</label><input type="text" id="cfgModel" placeholder="gpt-4o-mini / deepseek-chat"></div>
+        <div class="settings-item"><label>温度(0.0 – 1.5)</label><input type="number" id="cfgTemp" step="0.1" min="0" max="1.5" value="0.9"></div>
+        <div class="settings-action"><button class="big-btn accent" onclick="saveSettings()">✅ 保存设置</button></div>
+
+        <div class="section-title">💾 存档管理</div>
+        <div class="settings-item">
+          <label>存档会自动保存。也可以手动操作：</label>
+          <div class="settings-action"><button class="big-btn" onclick="saveGame(true)">💾 立即存档</button></div>
+          <div class="settings-action"><button class="big-btn" onclick="exportSave()">📤 导出存档</button></div>
+          <div class="settings-action"><button class="big-btn" onclick="copySave()">📋 复制存档</button></div>
+          <label class="upload-btn" style="display:block;text-align:center;margin-top:8px;">📥 导入存档<input type="file" accept=".json" style="display:none" onchange="importSave(event)"></label>
+        </div>
+
+        <div class="section-title">⚠️ 危险操作</div>
+        <div class="settings-action"><button class="big-btn" onclick="restartOnboarding()" style="background:var(--peach);">🔄 重新捏人</button></div>
+
+        <div class="section-title">ℹ️ 关于</div>
+        <div class="detail-section"><div class="detail-persona">霍格沃兹人生模拟器 · 亲世代限定版<br>1971 – 1981<br>本作为同人创作致敬，一切权利属于 J.K.罗琳女士及华纳兄弟。</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" data-page="home" onclick="switchPage('home')"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></button>
+    <button class="nav-item" data-page="story" onclick="switchPage('story')"><span class="nav-icon">📖</span><span class="nav-label">剧情</span></button>
+    <button class="nav-item" data-page="characters" onclick="switchPage('characters')"><span class="nav-icon">💕</span><span class="nav-label">角色</span></button>
+    <button class="nav-item" data-page="bag" onclick="switchPage('bag')"><span class="nav-icon">🎒</span><span class="nav-label">背包</span></button>
+    <button class="nav-item" data-page="social" onclick="switchPage('social')"><span class="nav-icon">💬</span><span class="nav-label">社交</span></button>
+  </div>
+
+  <div id="onboarding">
+    <div class="ob-header">
+      <div class="ob-step" id="obStep">第 1 / 5 步</div>
+      <div class="ob-progress"><div class="ob-progress-fill" id="obProgress" style="width:20%"></div></div>
+    </div>
+    <div class="ob-content" id="obContent"></div>
+    <div class="ob-footer">
+      <button class="big-btn" id="obPrev" onclick="obPrev()" style="display:none;">← 上一步</button>
+      <button class="big-btn accent" id="obNext" onclick="obNext()">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- 通用 Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   常量
+============================================================ */
+const STORAGE_KEY = 'hogwarts_pg_v5_save';
+const CFG_KEY = 'hogwarts_pg_cfg_v1';
+const HOUSES = ['格兰芬多','斯莱特林','赫奇帕奇','拉文克劳'];
+
+/* ============================================================
+   状态
+============================================================ */
+let state = {
+  time: { year: 1971, month: 9, day: 1, hour: 18, minute: 0 },
+  worldline: 0.00,
+  rewrittenNodes: [],
+  player: {
+    name:'', house:'', birthday:'', bloodline:'',
+    hair:'', eyes:'', height:'', build:'', personality:'', wand:'',
+    avatar:null, hp:100, mp:100, sp:100,
+    gold:5, silver:12, knut:8,
+    romance:{ status:'单身', waiting:null, boneMode:false }
+  },
+  affection: {},
+  moods: {},
+  bag: { 收藏品:[], 日常物品:[], 学习物品:[], 礼物:[] },
+  bagTab: '日常物品',
+  story: [], feed: [], groups: {},
+  history: { narrator: [], npc: {}, group: {} },
+  chatTarget: null, groupTarget: null,
+  socialTab: 'feed',
+  onboarded: false,
+  npcImages: {},
+  notifications: []
+};
+
+/* ============================================================
+   NPC 数据库
+============================================================ */
+const NPC_DB = {
+  '西里斯·布莱克': { type:'romance', emoji:'🐺', house:'格兰芬多',
+    persona:'格兰芬多1971级。深黑长发，灰色眼睛，英俊傲慢。布莱克家族叛徒。性格直率热烈，带着"我不在乎"的坦荡。对朋友极度忠诚，对家族极度厌恶。说话带讽刺和幽默，但从不在朋友面前装腔作势。内心藏着对家族的伤痛，但极少对人提起。',
+    gifts:{ love:'飞天摩托车模型', like:'麻瓜摇滚唱片', hate:'布莱克家族信物' } },
+  '莱姆斯·卢平': { type:'romance', emoji:'🌙', house:'格兰芬多',
+    persona:'格兰芬多1971级。浅棕头发，蓝眼，面容温和疲惫。狼人。安静、克制、温柔，习惯隐藏自己。每月圆夜消失。说话轻柔，总是先考虑别人。表面温顺，内心却有敏锐的洞察力和不动声色的幽默感。不轻易接受别人的好，一旦接受就会真诚相待。',
+    gifts:{ love:'巧克力', like:'一本旧书', hate:'银器' } },
+  '詹姆·波特': { type:'romance', emoji:'🦁', house:'格兰芬多',
+    persona:'格兰芬多1971级。乱蓬蓬的黑短发，琥珀色眼睛，圆框眼镜。魁地奇天才，恶作剧高手。表面张扬自大，内心重情重义。喜欢莉莉·伊万斯。说话直接爽朗。对朋友从无保留，但对斯莱特林有强烈的敌意。在莉莉面前会紧张得说错话。',
+    gifts:{ love:'金色飞贼模型', like:'魁地奇杂志', hate:'斯莱特林围巾' } },
+  '雷古勒斯·布莱克': { type:'romance', emoji:'⭐', house:'斯莱特林',
+    persona:'斯莱特林1972级。深色短发，灰色眼睛，清秀忧郁。小天狼星的弟弟。活在哥哥阴影下，渴望父母认可。安静、敏感、内心有自己的判断。说话谨慎，礼数周全，但会在细节处流露出真实的温柔。对血统论持有复杂态度。',
+    gifts:{ love:'布莱克家族旧物', like:'一本骑士小说', hate:'被拿来和哥哥比' } },
+  '小巴蒂·克劳奇': { type:'romance', emoji:'🖤', house:'斯莱特林',
+    persona:'斯莱特林。淡金色短发，狂热而锐利的目光。巴蒂·克劳奇之子。聪明、极端、渴望超越父亲。内心有一种被压抑的疯狂。说话优雅有礼，但用词锐利，总在试探别人。对认可的渴望极其强烈，对蔑视他的人会记恨很久。',
+    gifts:{ love:'黑魔法器物', like:'被认可', hate:'父亲的规矩' } },
+
+  /* 其他认识的人 */
+  '莉莉·伊万斯': { emoji:'🌹', house:'格兰芬多',
+    persona:'格兰芬多1971级。深红长发，明亮绿眼，秀美坚毅。魔药课天才。认真、善良、有原则。对詹姆的傲慢嗤之以鼻，对斯内普的友谊小心翼翼。说话直率但不刻薄。',
+    gifts:{ love:'一本魔药笔记', like:'花', hate:'纯血统论调' } },
+  '西弗勒斯·斯内普': { emoji:'🐍', house:'斯莱特林',
+    persona:'斯莱特林1971级。油腻黑长发，漆黑眼睛，鹰钩鼻。魔药天才，黑魔法知识深厚。阴沉、压抑、笨拙地爱着莉莉。被掠夺者欺凌。说话低缓带讽刺，从不主动示弱。在莉莉面前会流露出罕见的笨拙和柔软。',
+    gifts:{ love:'稀有魔药材料', like:'莉莉送的礼物', hate:'詹姆·波特的名字' } },
+  '小矮星彼得': { emoji:'🐀', house:'格兰芬多',
+    persona:'格兰芬多1971级。浅色透明头发，水汪汪小眼睛，圆脸尖鼻。比掠夺者矮小，总跟在后面。讨好、怯懦、渴望被认可。说话带颤音。对詹姆和小天狼星有近乎痴迷的崇拜。',
+    gifts:{ love:'被夸奖勇气', like:'糖果', hate:'被忽视' } },
+  '卢修斯·马尔福': { emoji:'💎', house:'斯莱特林',
+    persona:'斯莱特林级长。淡金长发，灰色眼睛，苍白精致。傲慢优雅，说话平滑如丝绸。斯拉格霍恩的得意门生。坚信纯血统优越。对混血和麻瓜出身者有明确的轻蔑，但会在公开场合保持体面。',
+    gifts:{ love:'稀有黑魔法器物', like:'精致袖扣', hate:'麻瓜物品' } },
+  '贝拉特里克斯·布莱克': { emoji:'🔥', house:'斯莱特林',
+    persona:'斯莱特林。深黑卷发，眼睑沉重，艳丽而疯狂。布莱克三姐妹长女。狂热、偏执、把忠诚当信仰。说话带压迫感。对认同的人极度忠诚，对反对的人毫不留情。',
+    gifts:{ love:'黑魔法典籍', like:'被崇拜', hate:'软弱' } },
+  '纳西莎·布莱克': { emoji:'💠', house:'斯莱特林',
+    persona:'斯莱特林。黑色长发，蓝色眼睛，冷艳优雅。布莱克三姐妹次女。说话轻柔但坚定，重视家族与体面。外表冷峻，对亲近的人却有一种隐藏的温柔。',
+    gifts:{ love:'精致首饰', like:'花束', hate:'粗俗言行' } },
+  '弗兰克·隆巴顿': { emoji:'🦡', house:'赫奇帕奇',
+    persona:'赫奇帕奇级长。深色短发，方脸，坚毅温和。正直可靠。说话坦荡，像在宣布一个早已确定的事实。从不掩饰自己的想法，对朋友绝对忠诚。',
+    gifts:{ love:'魁地奇纪念品', like:'一顿好饭', hate:'不诚实' } },
+  '爱丽丝·福西特': { emoji:'🌸', house:'赫奇帕奇',
+    persona:'赫奇帕奇。浅棕卷发，褐色眼睛，甜美坚定。活跃分子。说话温暖直接，不容拒绝。做事积极，总是第一个举手帮忙的人。',
+    gifts:{ love:'亲手做的点心', like:'鲜花', hate:'冷漠' } },
+  '卡拉多克·迪尔伯恩': { emoji:'🦅', house:'拉文克劳',
+    persona:'拉文克劳。深色长发，面容沉静。魔咒学天赋出众。话不多，思考深。对知识有近乎饥渴的追求，讨论魔法原理时会突然变得话多。',
+    gifts:{ love:'稀有咒语手稿', like:'书籍', hate:'嘈杂' } },
+  '本吉·芬威克': { emoji:'🕊️', house:'拉文克劳',
+    persona:'拉文克劳。浅棕头发，圆脸，温和。人缘极好。爱笑爱说话。喜欢交朋友，是那种能记住每个人名字和喜好的类型。',
+    gifts:{ love:'朋友聚会', like:'甜食', hate:'孤立' } },
+  '马琳·麦金农': { emoji:'✨', house:'格兰芬多',
+    persona:'格兰芬多。金色卷发，蓝眼，明艳爽朗。魁地奇追球手。喜欢大声唱歌和恶作剧。说话直接，笑声爽朗。',
+    gifts:{ love:'魁地奇手套', like:'糖果', hate:'沉闷' } },
+  '多卡斯·梅多斯': { emoji:'🌿', house:'格兰芬多',
+    persona:'格兰芬多。深色长发，褐色眼睛，高挑沉稳。魔咒学天赋极高。话不多但每句都恰到好处。观察力强，善于洞察人心。',
+    gifts:{ love:'稀有咒语书', like:'安静的午后', hate:'喧哗' } }
+};
+
+/* ============================================================
+   世界线关键节点
+============================================================ */
+const WORLDLINE_NODES = [
+  { year:1971, name:'入学分院', desc:'1971年9月1日，你与掠夺者、莉莉、斯内普一同踏入霍格沃茨。', key:'1971' },
+  { year:1974, name:'掠夺者发现卢平的秘密', desc:'詹姆、小天狼星和彼得发现了莱姆斯的狼人身份，并决定成为阿尼马格斯。', key:'1974' },
+  { year:1975, name:'活点地图完成', desc:'掠夺者完成活点地图。', key:'1975' },
+  { year:1976, name:'斯内普与莉莉决裂', desc:'尖叫棚屋事件后，斯内普在走廊里称莉莉"泥巴种"。', key:'1976' },
+  { year:1978, name:'毕业', desc:'掠夺者、莉莉、斯内普从霍格沃茨毕业。', key:'1978' },
+  { year:1979, name:'雷古勒斯牺牲', desc:'雷古勒斯·布莱克发现伏地魔的魂器秘密，用自己的生命换取了克利切的自由。', key:'1979' },
+  { year:1980, name:'哈利·波特出生', desc:'1980年7月31日，哈利·波特出生。', key:'1980' },
+  { year:1981, name:'戈德里克山谷的万圣节', desc:'1981年10月31日，波特夫妇遇害。', key:'1981' }
+];
+
+/* ============================================================
+   群聊默认配置
+============================================================ */
+const DEFAULT_GROUPS = {
+  'group_common': {
+    name: '霍格沃茨闲聊群',
+    icon: '💬',
+    members: ['詹姆·波特','西里斯·布莱克','莱姆斯·卢平','小矮星彼得','莉莉·伊万斯','马琳·麦金农'],
+    description: '格兰芬多公共休息室的闲聊群'
+  },
+  'group_quidditch': {
+    name: '魁地奇球迷会',
+    icon: '🧹',
+    members: ['詹姆·波特','西里斯·布莱克','马琳·麦金农','弗兰克·隆巴顿'],
+    description: '讨论魁地奇比赛、球队和战术'
+  },
+  'group_study': {
+    name: '图书馆自习小组',
+    icon: '📚',
+    members: ['莉莉·伊万斯','莱姆斯·卢平','卡拉多克·迪尔伯恩','多卡斯·梅多斯'],
+    description: '一起泡图书馆学习'
+  },
+  'group_slytherin': {
+    name: '地下休息室',
+    icon: '🐍',
+    members: ['雷古勒斯·布莱克','西弗勒斯·斯内普','卢修斯·马尔福','纳西莎·布莱克'],
+    description: '斯莱特林地牢的闲聊'
+  }
+};
+
+/* ============================================================
+   初始化
+============================================================ */
+function initGame() {
+  Object.keys(NPC_DB).forEach(name => {
+    if (!state.affection[name]) state.affection[name] = { value: 0, log:[] };
+    if (!state.moods[name]) state.moods[name] = '平静';
+  });
+  if (!state.bag.日常物品 || !state.bag.日常物品.length) {
+    state.bag.日常物品 = [
+      { icon:'🪄', name:'你的第一根魔杖', desc:'等待在奥利凡德获得。' },
+      { icon:'⚗️', name:'锡镴大釜(2号)', desc:'标准尺寸，用于魔药课。' },
+      { icon:'🧪', name:'玻璃药瓶套装', desc:'用于储存魔药材料。' },
+      { icon:'🔭', name:'黄铜望远镜', desc:'天文学课必备。' },
+      { icon:'⚖️', name:'黄铜天平', desc:'用于称量魔药材料。' }
+    ];
+    state.bag.学习物品 = [
+      { icon:'📕', name:'《标准咒语(初级)》', desc:'米兰达·戈沙克著。' },
+      { icon:'📗', name:'《魔法史》', desc:'巴希达·巴沙特著。' },
+      { icon:'📘', name:'《魔法理论》', desc:'阿德贝·沃夫林著。' },
+      { icon:'📙', name:'《初学变形指南》', desc:'埃默里克·斯威奇著。' },
+      { icon:'🌿', name:'《千种神奇草药及蕈类》', desc:'菲利达·斯波尔著。' },
+      { icon:'🧪', name:'《魔法药剂与药水》', desc:'阿森尼·吉格著。' },
+      { icon:'🐉', name:'《神奇动物在哪里》', desc:'纽特·斯卡曼德著。' },
+      { icon:'🛡️', name:'《黑暗力量：自卫指南》', desc:'昆汀·特林布著。' }
+    ];
+    state.bag.收藏品 = [ { icon:'🏰', name:'霍格沃茨校徽', desc:'开学时领到的纪念徽章。' } ];
+    state.bag.礼物 = [
+      { icon:'🍫', name:'一盒巧克力', desc:'送给喜欢甜食的人。', target:['莱姆斯·卢平','本吉·芬威克','小矮星彼得'] },
+      { icon:'📖', name:'一本旧书', desc:'不知道谁会喜欢。', target:['莱姆斯·卢平','卡拉多克·迪尔伯恩'] },
+      { icon:'🌸', name:'一束鲜花', desc:'看起来很适合送给喜欢花草的人。', target:['莉莉·伊万斯','爱丽丝·福西特','纳西莎·布莱克'] },
+      { icon:'🎵', name:'麻瓜摇滚唱片', desc:'麻瓜世界的东西。', target:['西里斯·布莱克'] }
+    ];
+  }
+  if (!state.groups || Object.keys(state.groups).length === 0) {
+    state.groups = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+    Object.keys(state.groups).forEach(id => { state.groups[id].messages = []; });
+  }
+}
+
+/* ============================================================
+   工具
+============================================================ */
+function fmtTime() { const t = state.time; return `${t.year}年${t.month}月${t.day}日 ${String(t.hour).padStart(2,'0')}:${String(t.minute).padStart(2,'0')}`; }
+function fmtDate() { const t = state.time; return `${t.year}.${t.month}.${t.day}`; }
+function advanceTime(min) {
+  const t = state.time; t.minute += min;
+  while (t.minute >= 60) { t.minute -= 60; t.hour += 1; }
+  while (t.hour >= 24) { t.hour -= 24; t.day += 1; }
+  if (t.day > 30) { t.day = 1; t.month += 1; }
+  if (t.month > 12) { t.month = 1; t.year += 1; }
+}
+function getStage(v) {
+  if (v >= 95) return '💞 灵魂伴侣';
+  if (v >= 85) return '❤️ 深爱';
+  if (v >= 70) return '💗 亲密';
+  if (v >= 50) return '🤝 信任';
+  if (v >= 30) return '😊 友好';
+  if (v >= 10) return '🙂 好感';
+  if (v >= -9) return '😐 中立';
+  if (v >= -50) return '😒 反感';
+  return '😠 宿怨';
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+function houseClass(house) {
+  return { '格兰芬多':'gryf', '斯莱特林':'slyt', '赫奇帕奇':'huff', '拉文克劳':'rave' }[house] || '';
+}
+function houseTag(house) {
+  return `<span class="house-tag ${houseClass(house)}">${house || '未分院'}</span>`;
+}
+
+/* 学院关系影响初始好感 */
+function houseAffinity(playerHouse, npcHouse) {
+  if (!playerHouse || !npcHouse) return 0;
+  if (playerHouse === npcHouse) return 15;
+  if ((playerHouse === '格兰芬多' && npcHouse === '斯莱特林') ||
+      (playerHouse === '斯莱特林' && npcHouse === '格兰芬多')) return -20;
+  if ((playerHouse === '赫奇帕奇' || playerHouse === '拉文克劳') &&
+      (npcHouse === '赫奇帕奇' || npcHouse === '拉文克劳')) return 5;
+  return 0;
+}
+
+/* ============================================================
+   图片压缩
+============================================================ */
+function compressImage(file, maxW, maxH) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const ratio = Math.min(maxW / w, maxH / h, 1);
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function getNpcImage(name, type) { return state.npcImages?.[name]?.[type] || null; }
+function getNpcAvatarHtml(name) {
+  const img = getNpcImage(name, 'avatar');
+  if (img) return `<img src="${img}">`;
+  return (NPC_DB[name]?.emoji || '?');
+}
+function getNpcPortraitHtml(name) { return getNpcImage(name, 'portrait'); }
+
+/* ============================================================
+   导航
+============================================================ */
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.querySelector(`.page[data-page="${name}"]`);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+  if (name === 'home') renderHome();
+  if (name === 'characters') renderCharacters();
+  if (name === 'bag') renderBag();
+  if (name === 'social') renderSocial();
+  if (name === 'story') setTimeout(() => {
+    const s = document.getElementById('storyStream');
+    s.scrollTop = s.scrollHeight;
+  }, 50);
+}
+function openSubpage(id) {
+  document.getElementById('sub-' + id).classList.add('active');
+  if (id === 'profile') renderProfile();
+  if (id === 'settings') loadSettingsForm();
+  if (id === 'worldline') renderWorldline();
+  if (id === 'notifications') renderNotifications();
+}
+function closeSubpage(id) { document.getElementById('sub-' + id).classList.remove('active'); }
+function switchSocialTab(tab) {
+  state.socialTab = tab;
+  document.querySelectorAll('.social-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('feedView').style.display = tab === 'feed' ? 'block' : 'none';
+  document.getElementById('contactsView').style.display = tab === 'contacts' ? 'block' : 'none';
+  document.getElementById('groupsView').style.display = tab === 'groups' ? 'block' : 'none';
+  if (tab === 'feed') renderFeed();
+  if (tab === 'contacts') renderContacts();
+  if (tab === 'groups') renderGroups();
+}
+
+/* ============================================================
+   首页渲染
+============================================================ */
+function renderHome() {
+  document.getElementById('topTime').textContent = fmtDate();
+  document.getElementById('topWorldline').textContent = state.worldline.toFixed(2) + '%';
+  document.getElementById('headerTitle').textContent = state.player.name ? `${state.player.name} 的故事` : '霍格沃兹 · 亲世代';
+  const ha = document.getElementById('headerAvatar');
+  ha.innerHTML = state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄';
+  const heroAv = document.getElementById('heroAvatar');
+  heroAv.innerHTML = state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄';
+  document.getElementById('heroName').textContent = state.player.name || '未来的巫师';
+  const subParts = [];
+  if (state.player.house) subParts.push(state.player.house);
+  if (state.player.bloodline) subParts.push(state.player.bloodline);
+  document.getElementById('heroSub').textContent = subParts.length ? subParts.join(' · ') : '1971 · 亲世代';
+  document.getElementById('homeTime').textContent = fmtTime();
+  document.getElementById('homeHouse').innerHTML = state.player.house ? houseTag(state.player.house) : '未分院';
+  document.getElementById('homeWorldline').textContent = state.worldline.toFixed(2) + '%';
+  document.getElementById('homeRomance').textContent = state.player.romance.status;
+  document.getElementById('homeHp').style.width = state.player.hp + '%'; document.getElementById('homeHpV').textContent = state.player.hp;
+  document.getElementById('homeMp').style.width = state.player.mp + '%'; document.getElementById('homeMpV').textContent = state.player.mp;
+  document.getElementById('homeSp').style.width = state.player.sp + '%'; document.getElementById('homeSpV').textContent = state.player.sp;
+  const last = [...state.story].reverse().find(s => s.role !== 'action');
+  const rc = document.getElementById('homeRecent');
+  if (last) rc.innerHTML = `<div class="rs-time">${last.time || ''}</div><div class="rs-text">${escapeHtml(last.text || '').slice(0, 100)}</div>`;
+  updateNotifBadge();
+}
+
+function updateNotifBadge() {
+  const btn = document.getElementById('notifBtn');
+  const count = state.notifications.filter(n => !n.read).length;
+  const oldBadge = btn.querySelector('.badge');
+  if (oldBadge) oldBadge.remove();
+  if (count > 0) {
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = count > 9 ? '9+' : count;
+    btn.appendChild(badge);
+  }
+}
+
+/* ============================================================
+   剧情
+============================================================ */
+function renderStory() {
+  const el = document.getElementById('storyStream');
+  el.innerHTML = state.story.map(entry => {
+    if (entry.role === 'cg') return `<div class="story-entry cg"><div class="cg-title">${escapeHtml(entry.title)}</div></div>`;
+    const text = escapeHtml(entry.text || '').replace(/\n/g, '<br>');
+    return `<div class="story-entry ${entry.role}"><span class="timestamp">${entry.time || ''}</span>${entry.speaker ? `<span class="speaker">${escapeHtml(entry.speaker)}：</span>` : ''}${text}</div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+/* ============================================================
+   角色页(攻略对象翻页)
+============================================================ */
+function renderCharacters() {
+  const track = document.getElementById('romanceTrack');
+  const ind = document.getElementById('pagerIndicator');
+  const list = Object.entries(state.affection)
+    .filter(([name]) => NPC_DB[name]?.type === 'romance')
+    .sort((a,b) => b[1].value - a[1].value);
+
+  if (!list.length) {
+    track.innerHTML = `<div class="romance-slide"><div class="empty"><span class="empty-icon">✨</span>暂无攻略对象</div></div>`;
+    ind.innerHTML = '';
+    return;
+  }
+
+  track.innerHTML = list.map(([name, aff]) => {
+    const npc = NPC_DB[name] || {};
+    const pct = Math.max(0, (aff.value + 100) / 2);
+    const portraitImg = getNpcPortraitHtml(name);
+    const mood = state.moods[name] || '平静';
+    return `<div class="romance-slide">
+      <div class="portrait-card">
+        ${portraitImg ? `<img src="${portraitImg}" alt="${name}">` : `<div class="portrait-empty"><div class="big-emoji">${npc.emoji || '🪄'}</div><div>点击下方上传立绘</div></div>`}
+        <label class="portrait-upload">🖼️ ${portraitImg ? '换立绘' : '上传立绘'}<input type="file" accept="image/*" style="display:none" onchange="uploadNpcImageFile(event, '${name}', 'portrait')"></label>
+      </div>
+      <div class="romance-info">
+        <div class="romance-avatar">
+          ${getNpcAvatarHtml(name)}
+          <label class="mini-upload">📷<input type="file" accept="image/*" style="display:none" onchange="uploadNpcImageFile(event, '${name}', 'avatar')"></label>
+        </div>
+        <div class="romance-meta">
+          <div class="romance-name">${name} ${houseTag(npc.house)}</div>
+          <div class="romance-mood">心情 · ${mood}</div>
+        </div>
+      </div>
+      <div class="detail-section" style="margin:0;">
+        <h4>💕 好感度</h4>
+        <div class="romance-bar-outer"><div class="romance-bar-inner" style="width:${pct}%"></div></div>
+        <div class="romance-stage"><span>${getStage(aff.value)}</span><span>${aff.value > 0 ? '+' : ''}${aff.value} / 100</span></div>
+      </div>
+      <div class="romance-actions">
+        <button class="big-btn accent" onclick="openChat('${name}')">💬 私聊</button>
+        <button class="big-btn" onclick="openCharDetail('${name}')">📖 详情</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  ind.innerHTML = list.map((_, i) => `<div class="pager-dot ${i===0?'active':''}" onclick="scrollToSlide(${i})"></div>`).join('');
+  track.scrollLeft = 0;
+}
+function scrollToSlide(i) {
+  const track = document.getElementById('romanceTrack');
+  track.scrollTo({ left: track.clientWidth * i, behavior: 'smooth' });
+}
+function onRomanceScroll() {
+  const track = document.getElementById('romanceTrack');
+  const dots = document.querySelectorAll('.pager-dot');
+  const w = track.clientWidth;
+  if (!w) return;
+  const idx = Math.round(track.scrollLeft / w);
+  dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+/* ============================================================
+   角色详情
+============================================================ */
+function openCharDetail(name) {
+  state.chatTarget = name;
+  const npc = NPC_DB[name] || {}, aff = state.affection[name] || { value:0, log:[] };
+  document.getElementById('cdTitle').textContent = name;
+  const logs = (aff.log || []).slice(-5).reverse();
+  const typeLabel = npc.type === 'romance' ? '💕 攻略对象' : '👤 认识的人';
+  const mood = state.moods[name] || '平静';
+
+  document.getElementById('cdContent').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-avatar">${getNpcAvatarHtml(name)}</div>
+      <div>
+        <div class="detail-name">${name}</div>
+        <div class="detail-meta">${houseTag(npc.house)} <span class="romance-mood">心情 · ${mood}</span> <span style="font-size:12px;color:var(--ink-light);font-weight:700;">${typeLabel}</span></div>
+      </div>
+    </div>
+    <div class="detail-section"><h4>💕 好感度</h4>
+      <div class="romance-bar-outer" style="margin:0;"><div class="romance-bar-inner" style="width:${Math.max(0,(aff.value+100)/2)}%"></div></div>
+      <div class="romance-stage" style="margin-top:8px;"><span>${getStage(aff.value)}</span><span>${aff.value > 0 ? '+' : ''}${aff.value} / 100</span></div>
+    </div>
+    <div class="detail-section"><h4>📝 角色档案</h4><div class="detail-persona">${npc.persona || '—'}</div></div>
+    <div class="detail-section"><h4>🎁 礼物偏好</h4>
+      <div style="font-size:13px;line-height:1.9;font-weight:700;">
+        💖 挚爱：${npc.gifts?.love || '—'}<br>
+        💚 喜欢：${npc.gifts?.like || '—'}<br>
+        💔 厌恶：${npc.gifts?.hate || '—'}
+      </div>
+    </div>
+    <div class="detail-section"><h4>📜 互动记录</h4>
+      ${logs.length ? logs.map(l => `<div class="detail-log"><span class="log-time">${l.time}</span>${escapeHtml(l.text)}</div>`).join('') : '<div class="detail-persona" style="color:var(--ink-light);">还没有互动记录。</div>'}
+    </div>
+    <div class="detail-actions">
+      <button class="big-btn accent" onclick="openChat('${name}')">💬 私聊</button>
+      <button class="big-btn alt" onclick="openGiftModal('${name}')">🎁 送礼</button>
+    </div>
+  `;
+  openSubpage('char-detail');
+}
+
+/* ============================================================
+   送礼
+============================================================ */
+function openGiftModal(name) {
+  const gifts = state.bag.礼物 || [];
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
+    <h3>🎁 送给 ${name}</h3>
+    ${gifts.length ? gifts.map((g, i) => `
+      <div class="gift-item" onclick="sendGift('${name}', ${i})">
+        <div class="gift-icon">${g.icon}</div>
+        <div class="gift-name">${g.name}</div>
+      </div>
+    `).join('') : '<div class="empty" style="padding:20px;"><span class="empty-icon">📭</span>背包里没有礼物</div>'}
+    <div class="modal-actions">
+      <button class="big-btn" onclick="closeModal()">关闭</button>
+    </div>
+  `;
+  overlay.classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+async function sendGift(name, giftIdx) {
+  const gift = state.bag.礼物[giftIdx];
+  if (!gift) return;
+  const npc = NPC_DB[name] || {};
+  const gifts = npc.gifts || {};
+  let delta = 3;
+  let reaction = '';
+
+  // 本地判定优先
+  if (gift.name.includes(gifts.love) || gifts.love?.includes(gift.name)) delta = 15;
+  else if (gift.target && gift.target.includes(name)) delta = 8;
+  else if (gift.name.includes(gifts.hate) || gifts.hate?.includes(gift.name)) delta = -12;
+  else if (gifts.like && gift.name.includes(gifts.like)) delta = 8;
+
+  // 从背包移除
+  state.bag.礼物.splice(giftIdx, 1);
+
+  // 好感度变化
+  if (!state.affection[name]) state.affection[name] = { value:0, log:[] };
+  state.affection[name].value = Math.max(-100, Math.min(100, state.affection[name].value + delta));
+  state.affection[name].log.push({ text:`你送了「${gift.name}」，好感${delta > 0 ? '+' : ''}${delta}`, time: fmtTime() });
+
+  closeModal();
+
+  // 让AI生成NPC的反应
+  const cfg = getCfg();
+  if (cfg.apiKey && cfg.baseUrl && cfg.model) {
+    try {
+      const reply = await callAI([
+        { role:'system', content:`你扮演《哈利·波特》亲世代角色：${name}。\n【角色档案】\n${npc.persona}\n\n【当前关系】好感度：${state.affection[name].value}(${getStage(state.affection[name].value)})\n\n玩家刚刚送给你一个礼物：「${gift.name}」。\n请以 ${name} 的身份，用 1–2 句自然口语化的中文，表达你对这份礼物的反应。\n- 挚爱反应：惊喜、真诚的喜欢\n- 喜欢反应：开心、礼貌的感谢\n- 一般反应：客气疏离\n- 厌恶反应：冷淡、甚至有点不快\n- 不要替玩家说话，不要描述玩家的动作。` },
+        { role:'user', content:`我送给你一个「${gift.name}」。` }
+      ]);
+      reaction = reply.trim();
+    } catch(e) { reaction = `(${name} 接过礼物，轻轻点头。)`; }
+  } else {
+    reaction = delta > 0 ? `(${name} 接过礼物，露出了笑容。)` : `(${name} 皱了皱眉，勉强收下。)`;
+  }
+
+  state.affection[name].log.push({ text:reaction, time: fmtTime() });
+  saveGame(true);
+  toast(`🎁 礼物已送出`);
+  renderCharacters();
+  if (state.chatTarget === name) renderChatLog();
+  if (document.getElementById('sub-char-detail').classList.contains('active')) openCharDetail(name);
+}
+
+/* ============================================================
+   私聊
+============================================================ */
+function openChat(name) {
+  state.chatTarget = name;
+  const npc = NPC_DB[name] || {};
+  document.getElementById('chatTitle').textContent = `${npc.emoji || ''} ${name}`;
+  renderChatLog(); openSubpage('chat');
+  setTimeout(() => document.getElementById('chatInput').focus(), 200);
+}
+function renderChatLog() {
+  const name = state.chatTarget, log = state.history.npc[name] || [], el = document.getElementById('chatLog');
+  el.innerHTML = log.length ? log.map(m => `<div class="chat-msg ${m.role==='user'?'me':'npc'}">${escapeHtml(m.content)}</div>`).join('') : `<div class="empty"><span class="empty-icon">💬</span>说点什么来开启对话吧…</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+async function sendChat() {
+  const input = document.getElementById('chatInput'), text = input.value.trim();
+  if (!text || !state.chatTarget) return; input.value = '';
+  const name = state.chatTarget, npc = NPC_DB[name] || {}, aff = state.affection[name] || { value:0, log:[] };
+  if (!state.history.npc[name]) state.history.npc[name] = [];
+  state.history.npc[name].push({ role:'user', content: text });
+  aff.log = aff.log || []; aff.log.push({ text:'你说：' + text, time: fmtTime() }); state.affection[name] = aff;
+  renderChatLog(); saveGame();
+  const logEl = document.getElementById('chatLog'), typing = document.createElement('div');
+  typing.className = 'chat-msg npc'; typing.textContent = '…'; logEl.appendChild(typing); logEl.scrollTop = logEl.scrollHeight;
+
+  const mood = state.moods[name] || '平静';
+  const playerHouse = state.player.house;
+  const playerName = state.player.name || '你';
+
+  const systemPrompt = `你扮演《哈利·波特》亲世代角色：${name}。
+【角色档案】
+${npc.persona || '霍格沃茨学生。'}
+
+【当前关系】
+玩家：${playerName}(学院：${playerHouse || '未分院'})
+与玩家好感度：${aff.value}(${getStage(aff.value)})
+你当前的心情：${mood}
+
+【扮演要求 · 极其重要】
+1. 你必须有灵魂、有情绪、有独立意志，不许冷漠、不许呆板、不许变成只会附和的工具人。
+2. 严格忠于原著和电影里这个人物的语气、用词、态度、思维方式。
+3. 绝不出戏，绝不提及AI、模型、系统等词。
+4. 不许替玩家说话，不许描述玩家的动作和心理。
+5. 回复 1–4 句，自然口语化，符合你们的关系和当前心情。
+6. 好感度低时：疏离、警惕、甚至冷淡，但仍保留人物的独特个性(比如斯内普会讽刺，小天狼星会直接)。
+7. 好感度高时：亲近、放松，甚至主动开玩笑或分享。
+8. 学院对立会影响你对玩家的基础态度，但不会完全决定。
+9. 如果当前时间线有原著事件正在发生(如1971年秋入学)，可以适当融入。
+10. 不要总是主动提问，也不要总是礼貌客套，说人话。
+
+【输出格式】
+直接输出 ${name} 说的话。不要带引号，不要写旁白。`;
+
+  try {
+    const messages = [ { role:'system', content: systemPrompt }, ...state.history.npc[name].slice(-12) ];
+    const reply = await callAI(messages); typing.remove();
+    state.history.npc[name].push({ role:'assistant', content: reply.trim() });
+    aff.log.push({ text: reply.trim(), time: fmtTime() });
+    renderChatLog();
+
+    // 概率改变心情
+    if (Math.random() < 0.3) {
+      const moods = ['开心','平静','低落','烦躁'];
+      state.moods[name] = moods[Math.floor(Math.random() * moods.length)];
+    }
+    saveGame(true);
+  } catch(e) {
+    typing.remove();
+    state.history.npc[name].push({ role:'assistant', content: '⚠️ ' + e.message });
+    renderChatLog();
+  }
+}
+
+/* ============================================================
+   背包
+============================================================ */
+function renderBag() {
+  const tabs = document.getElementById('bagTabs');
+  tabs.innerHTML = Object.keys(state.bag).map(k => `<button class="bag-tab ${k===state.bagTab?'active':''}" onclick="state.bagTab='${k}';renderBag()">${k}</button>`).join('');
+  const items = state.bag[state.bagTab] || [], grid = document.getElementById('itemGrid');
+  grid.innerHTML = items.length ? items.map((it, i) => `
+    <div class="item-card" onclick="openItemDetail('${state.bagTab}', ${i})">
+      <div class="item-icon">${it.icon || '📦'}</div>
+      <div class="item-name">${escapeHtml(it.name)}</div>
+    </div>
+  `).join('') : `<div class="empty" style="grid-column:1/-1;"><span class="empty-icon">📭</span>这个分类还是空的。</div>`;
+}
+function openItemDetail(tab, idx) {
+  const it = state.bag[tab]?.[idx]; if (!it) return;
+  document.getElementById('idContent').innerHTML = `
+    <div class="detail-hero" style="flex-direction:column;text-align:center;gap:8px;">
+      <div class="detail-avatar" style="font-size:36px;border-radius:20px;">${it.icon || '📦'}</div>
+      <div class="detail-name">${escapeHtml(it.name)}</div>
+      <div class="detail-meta">分类 · ${tab}</div>
+    </div>
+    <div class="detail-section"><h4>📖 描述</h4><div class="detail-persona">${escapeHtml(it.desc || '没有更多信息。')}</div></div>
+    ${tab === '礼物' ? `<div class="detail-section"><h4>🎁 适合送给</h4><div class="detail-persona">${it.target ? it.target.join('、') : '暂无推荐'}</div></div>` : ''}
+  `;
+  openSubpage('item-detail');
+}
+
+/* ============================================================
+   社交
+============================================================ */
+function renderSocial() { switchSocialTab(state.socialTab); }
+
+function renderFeed() {
+  const el = document.getElementById('feedView');
+  const compose = `
+    <div class="compose-card">
+      <div class="compose-top">
+        <div class="compose-avatar">${state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄'}</div>
+        <textarea class="compose-input" id="composeInput" placeholder="今天在霍格沃茨发生了什么？"></textarea>
+      </div>
+      <div class="compose-actions">
+        <button class="big-btn accent" style="width:auto;padding:10px 24px;font-size:13px;" onclick="publishPost()">📤 发布</button>
+      </div>
+    </div>`;
+
+  if (!state.feed.length) {
+    el.innerHTML = compose + `<div class="empty"><span class="empty-icon">💬</span>还没有动态。<br>发一条吧，或者让朋友们先发。<br><br><button class="big-btn accent" style="display:inline-flex;width:auto;padding:12px 24px;" onclick="generateFeed()">🔄 刷新</button></div>`;
+    return;
+  }
+  el.innerHTML = compose + state.feed.map((post, i) => renderFeedPost(post, i)).join('')
+    + `<div style="text-align:center;margin:10px 0 20px;"><button class="big-btn accent" style="display:inline-flex;width:auto;padding:12px 24px;" onclick="generateFeed()">🔄 刷新朋友圈</button></div>`;
+}
+
+function renderFeedPost(post, i) {
+  const isPlayer = post.author === '你';
+  const authorAvatar = isPlayer ? (state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄') : getNpcAvatarHtml(post.author);
+  const commentsHtml = (post.comments || []).map(c => {
+    const cAvatar = c.author === '你' ? (state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄') : getNpcAvatarHtml(c.author);
+    return `<div class="feed-comment">
+      <div class="comment-avatar">${cAvatar}</div>
+      <div class="comment-bubble">
+        <span class="comment-name">${escapeHtml(c.author)}</span>
+        ${c.replyTo ? `<span class="comment-reply"> 回复 </span><span class="comment-name">${escapeHtml(c.replyTo)}</span>` : ''}
+        <span class="comment-text">：${escapeHtml(c.body)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="feed-post" data-idx="${i}">
+    <div class="feed-header">
+      <div class="feed-avatar">${authorAvatar}</div>
+      <div class="feed-meta">
+        <div class="feed-name">${escapeHtml(post.author)}</div>
+        <div class="feed-time">${post.time}</div>
+      </div>
+    </div>
+    <div class="feed-body">${escapeHtml(post.body)}</div>
+    <div class="feed-actions">
+      <button class="feed-action ${post.liked?'liked':''}" onclick="toggleLike(${i})">${post.liked?'❤️':'🤍'} ${(post.likes||[]).length}</button>
+      <button class="feed-action" onclick="toggleComments(${i})">💬 ${(post.comments||[]).length}</button>
+    </div>
+    <div class="feed-comments" id="comments-${i}" style="display:none;">
+      ${commentsHtml}
+      <div class="comment-input-row">
+        <input type="text" id="comment-input-${i}" placeholder="写评论…" onkeydown="if(event.key==='Enter')addComment(${i})">
+        <button class="comment-send" onclick="addComment(${i})">发送</button>
+      </div>
+    </div>
+  </div>`;
+}
+function toggleComments(i) {
+  const el = document.getElementById(`comments-${i}`);
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+function toggleLike(i) {
+  const post = state.feed[i];
+  if (!post.likes) post.likes = [];
+  const idx = post.likes.indexOf('你');
+  if (idx >= 0) post.likes.splice(idx, 1); else post.likes.push('你');
+  post.liked = idx < 0;
+  if (post.author && post.author !== '你' && state.affection[post.author]) {
+    state.affection[post.author].value = Math.max(-100, Math.min(100, state.affection[post.author].value + (post.liked ? 1 : -1)));
+  }
+  renderFeed(); saveGame();
+}
+
+async function publishPost() {
+  const input = document.getElementById('composeInput');
+  const text = input.value.trim();
+  if (!text) return alert('写点什么吧～');
+  input.value = '';
+  const post = { author:'你', body:text, time:fmtTime(), likes:[], liked:false, comments:[], isPlayer:true };
+  state.feed.unshift(post);
+  renderFeed(); saveGame();
+  generateNpcReactions(post);
+}
+
+async function generateNpcReactions(post) {
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) return;
+  const npcList = Object.keys(state.affection).map(n => {
+    const npc = NPC_DB[n] || {};
+    return `${n}(${npc.house}，好感${state.affection[n].value}，性格：${(npc.persona || '').slice(0, 50)})`;
+  }).join('\n');
+  const prompt = `你是霍格沃茨亲世代朋友圈的互动生成器。
+玩家刚发了一条动态：
+「${post.body}」
+
+当前所有NPC(好感度越高越亲近)：
+${npcList}
+
+请生成真实的互动：
+1. 挑选 2–4 位 NPC 点赞
+2. 挑选 1–3 位 NPC 评论，评论要贴合各自性格
+3. 如果某个 NPC 的评论针对另一个 NPC，用 replyTo 标明
+
+角色不许OOC——比如斯内普不会热情，小天狼星不会拘谨，卢平温和但克制。
+严格输出 JSON：
+{
+  "likes": ["NPC名1", "NPC名2"],
+  "comments": [
+    {"author":"NPC名1","body":"评论内容","replyTo":null}
+  ]
+}`;
+  try {
+    const reply = await callAI([
+      { role:'system', content:'你是 Hogwarts 朋友圈互动生成器。只输出 JSON。' },
+      { role:'user', content: prompt }
+    ], { json: true });
+    let data;
+    try { data = JSON.parse(reply); } catch(e) { const m = reply.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : {}; }
+    setTimeout(() => {
+      if (data.likes) {
+        post.likes = post.likes || [];
+        data.likes.forEach(n => { if (!post.likes.includes(n)) post.likes.push(n); });
+      }
+      if (data.comments) {
+        post.comments = post.comments || [];
+        data.comments.forEach(c => {
+          post.comments.push({ author:c.author, body:c.body, replyTo:c.replyTo || null, time:fmtTime() });
+          if (state.affection[c.author]) state.affection[c.author].value = Math.min(100, state.affection[c.author].value + 1);
+        });
+      }
+      saveGame(true);
+      if (state.socialTab === 'feed') renderFeed();
+    }, 800);
+  } catch(e) { console.warn('NPC reaction failed', e); }
+}
+
+async function addComment(i) {
+  const input = document.getElementById(`comment-input-${i}`);
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const post = state.feed[i];
+  post.comments = post.comments || [];
+  post.comments.push({ author:'你', body:text, time:fmtTime() });
+  saveGame(); renderFeed();
+  setTimeout(() => { const el = document.getElementById(`comments-${i}`); if (el) el.style.display = 'flex'; }, 50);
+  generateNpcReplyToComment(post, text, i);
+}
+
+async function generateNpcReplyToComment(post, playerComment, idx) {
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) return;
+  const npcList = Object.keys(state.affection).slice(0, 8);
+  const prompt = `玩家在霍格沃茨朋友圈里，对「${post.author}」的动态评论了一句：「${playerComment}」
+动态原文：「${post.body}」
+
+可用的NPC：${npcList.join('、')}
+请让 1–2 位 NPC 来回复玩家的评论。回复口语化、符合性格，不要OOC。
+
+严格输出 JSON：
+{"comments":[{"author":"NPC名","body":"回复内容"}]}`;
+  try {
+    const reply = await callAI([
+      { role:'system', content:'你是 Hogwarts 朋友圈互动生成器。只输出 JSON。' },
+      { role:'user', content: prompt }
+    ], { json: true });
+    let data;
+    try { data = JSON.parse(reply); } catch(e) { const m = reply.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : {}; }
+    if (data.comments) {
+      setTimeout(() => {
+        data.comments.forEach(c => {
+          if (state.affection[c.author]) {
+            post.comments.push({ author:c.author, body:c.body, replyTo:'你', time:fmtTime() });
+            state.affection[c.author].value = Math.min(100, state.affection[c.author].value + 1);
+          }
+        });
+        saveGame();
+        if (state.socialTab === 'feed') {
+          renderFeed();
+          setTimeout(() => { const el = document.getElementById(`comments-${idx}`); if (el) el.style.display = 'flex'; }, 50);
+        }
+      }, 600);
+    }
+  } catch(e) {}
+}
+
+async function generateFeed() {
+  const el = document.getElementById('feedView');
+  el.innerHTML = `<div class="compose-card"><div class="compose-top"><div class="compose-avatar">${state.player.avatar ? `<img src="${state.player.avatar}">` : '🪄'}</div><textarea class="compose-input" id="composeInput" placeholder="今天在霍格沃茨发生了什么？"></textarea></div><div class="compose-actions"><button class="big-btn accent" style="width:auto;padding:10px 24px;font-size:13px;" onclick="publishPost()">📤 发布</button></div></div><div class="writing" style="justify-content:center;"><div class="dot"></div><div class="dot"></div><div class="dot"></div> 朋友们正在发帖…</div>`;
+  const npcList = Object.keys(state.affection).map(n => {
+    const npc = NPC_DB[n] || {};
+    return `${n}(${npc.house||''}，好感${state.affection[n].value})：${(npc.persona||'').slice(0,50)}`;
+  }).join('\n');
+  const prompt = `你是霍格沃茨亲世代的朋友圈内容生成器。
+当前时间：${fmtTime()}
+可发帖的角色：
+${npcList}
+
+请生成 3 条动态，每条来自不同角色。
+- 内容贴合角色人设与 1971 年秋季时间线
+- 可以是吐槽、感慨、日常、恶作剧预告
+- 每条 30–80 字，口语化，英式幽默
+- 每条动态配 1–2 条来自其他 NPC 的评论
+- 角色不许OOC
+
+严格输出 JSON：
+{"posts":[
+  {"author":"角色名","body":"动态内容","likes":["NPC名1"],"comments":[{"author":"NPC名","body":"评论","replyTo":null}]}
+]}`;
+  try {
+    const reply = await callAI([
+      { role:'system', content:'你是 Hogwarts 朋友圈内容生成器。只输出 JSON。' },
+      { role:'user', content: prompt }
+    ], { json: true });
+    let data;
+    try { data = JSON.parse(reply); } catch(e) { const m = reply.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : {}; }
+    const posts = data.posts || [];
+    posts.forEach(p => {
+      state.feed.unshift({
+        author: p.author, body: p.body, time: fmtTime(),
+        likes: p.likes || [], liked: false,
+        comments: (p.comments || []).map(c => ({ author:c.author, body:c.body, replyTo:c.replyTo || null, time:fmtTime() })),
+        isPlayer: false
+      });
+    });
+    saveGame(true); renderFeed();
+  } catch(e) {
+    el.innerHTML = `<div class="empty" style="color:var(--ink);">⚠️ ${e.message}</div>`;
+  }
+}
+
+function renderContacts() {
+  const el = document.getElementById('contactsView');
+  const list = Object.entries(state.affection).sort((a,b) => b[1].value - a[1].value);
+  el.innerHTML = list.map(([name, aff]) => {
+    const npc = NPC_DB[name] || {};
+    const last = (aff.log && aff.log.length) ? aff.log[aff.log.length-1].text : '尚未交谈';
+    const tag = npc.type === 'romance' ? '💕' : '👤';
+    return `<div class="contact-row" onclick="openCharDetail('${name}')">
+      <div class="contact-avatar">${getNpcAvatarHtml(name)}</div>
+      <div class="contact-info">
+        <div class="contact-name">${escapeHtml(name)} ${tag} ${houseTag(npc.house)}</div>
+        <div class="contact-last">${escapeHtml(last.slice(0, 40))}</div>
+      </div>
+      <div class="contact-aff">${aff.value > 0 ? '+' : ''}${aff.value}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   群聊
+============================================================ */
+function renderGroups() {
+  const el = document.getElementById('groupsView');
+  const groups = Object.entries(state.groups);
+  el.innerHTML = groups.map(([id, g]) => `
+    <div class="group-card">
+      <div class="group-head">
+        <div class="group-icon">${g.icon || '👥'}</div>
+        <div class="group-info">
+          <div class="group-name">${escapeHtml(g.name)}</div>
+          <div class="group-members">${g.members.slice(0, 4).join('、')}${g.members.length > 4 ? ' 等' : ''} · ${(g.messages || []).length} 条消息</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-light);font-weight:700;margin-bottom:6px;">${escapeHtml(g.description || '')}</div>
+      <div class="group-actions">
+        <button class="group-btn" onclick="openGroupChat('${id}')">💬 进入</button>
+        <button class="group-btn alt" onclick="renameGroup('${id}')">✏️ 改名</button>
+      </div>
+    </div>
+  `).join('');
+}
+function renameGroup(id) {
+  const g = state.groups[id]; if (!g) return;
+  const newName = prompt('输入新的群聊名称：', g.name);
+  if (!newName) return;
+  g.name = newName.trim().slice(0, 20);
+  saveGame(true); renderGroups();
+  toast('✅ 群名已修改');
+}
+function renameCurrentGroup() {
+  if (!state.groupTarget) return;
+  renameGroup(state.groupTarget);
+}
+function openGroupChat(id) {
+  state.groupTarget = id;
+  const g = state.groups[id]; if (!g) return;
+  document.getElementById('gcTitle').textContent = `${g.icon || '👥'} ${g.name}`;
+  renderGroupChatLog();
+  openSubpage('group-chat');
+  setTimeout(() => document.getElementById('groupChatInput').focus(), 200);
+}
+function renderGroupChatLog() {
+  const id = state.groupTarget;
+  const g = state.groups[id]; if (!g) return;
+  const msgs = g.messages || [];
+  const el = document.getElementById('groupChatLog');
+  el.innerHTML = msgs.length ? msgs.map(m => {
+    if (m.author === '你') {
+      return `<div class="chat-msg me">${escapeHtml(m.body)}</div>`;
+    }
+    return `<div class="chat-msg npc"><span class="chat-speaker">${escapeHtml(m.author)}</span>${escapeHtml(m.body)}</div>`;
+  }).join('') : `<div class="empty"><span class="empty-icon">💬</span>群里还没有消息，说点什么吧…</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+async function sendGroupChat() {
+  const input = document.getElementById('groupChatInput');
+  const text = input.value.trim();
+  if (!text || !state.groupTarget) return;
+  input.value = '';
+  const id = state.groupTarget, g = state.groups[id];
+  if (!g) return;
+  g.messages = g.messages || [];
+  g.messages.push({ author:'你', body:text, time:fmtTime() });
+  renderGroupChatLog(); saveGame();
+
+  // AI 让 1–2 个群成员回复
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) return;
+
+  const members = g.members.map(n => {
+    const npc = NPC_DB[n] || {};
+    return `${n}(${npc.house || ''}，好感${state.affection[n]?.value || 0})：${(npc.persona || '').slice(0, 60)}`;
+  }).join('\n');
+
+  const recent = g.messages.slice(-8).map(m => `${m.author}：${m.body}`).join('\n');
+
+  const prompt = `你是霍格沃茨亲世代的群聊模拟器。
+群名：「${g.name}」
+群描述：${g.description}
+群成员：
+${members}
+
+最近群聊记录：
+${recent}
+
+玩家刚说：「${text}」
+
+请让 1–2 位群成员回复玩家。要求：
+- 角色必须忠于原著性格，不许OOC，不许冷漠呆板
+- 每句话 15–60 字，自然口语化
+- 可以互相接话(比如有人附和或反驳另一个人)
+- 可以让氛围轻松有趣，符合朋友群聊的真实感
+
+严格输出 JSON：
+{"replies":[{"author":"NPC名","body":"回复内容"}]}`;
+
+  const logEl = document.getElementById('groupChatLog');
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg npc'; typing.textContent = '…';
+  logEl.appendChild(typing); logEl.scrollTop = logEl.scrollHeight;
+
+  try {
+    const reply = await callAI([
+      { role:'system', content:'你是 Hogwarts 群聊生成器。只输出 JSON。' },
+      { role:'user', content: prompt }
+    ], { json: true });
+    typing.remove();
+    let data;
+    try { data = JSON.parse(reply); } catch(e) { const m = reply.match(/\{[\s\S]*\}/); data = m ? JSON.parse(m[0]) : {}; }
+    if (data.replies) {
+      data.replies.forEach(r => {
+        if (NPC_DB[r.author]) {
+          g.messages.push({ author:r.author, body:r.body, time:fmtTime() });
+          if (state.affection[r.author]) state.affection[r.author].value = Math.min(100, state.affection[r.author].value + 1);
+        }
+      });
+    }
+    renderGroupChatLog(); saveGame(true);
+  } catch(e) {
+    typing.remove();
+    g.messages.push({ author:'系统', body:'⚠️ ' + e.message, time:fmtTime() });
+    renderGroupChatLog();
+  }
+}
+
+/* ============================================================
+   世界线因果图
+============================================================ */
+function renderWorldline() {
+  const el = document.getElementById('worldlineContent');
+  el.innerHTML = `
+    <div class="detail-section" style="text-align:center;">
+      <h4>🌍 世界线变动率</h4>
+      <div style="font-size:36px;font-weight:700;color:var(--ink);margin:8px 0;">${state.worldline.toFixed(2)}%</div>
+      <div style="font-size:12px;color:var(--ink-light);font-weight:700;">${state.rewrittenNodes.length} 个节点被改写</div>
+    </div>
+    <div class="section-title">📜 原著关键节点</div>
+    <div class="worldline-tree">
+      ${WORLDLINE_NODES.map(n => {
+        const rewritten = state.rewrittenNodes.includes(n.key);
+        return `<div class="node ${rewritten ? 'rewritten' : ''}">
+          <div class="node-badge">${rewritten ? '已改写' : '原著'}</div>
+          <div class="node-year">${n.year}年</div>
+          <div class="node-name">${escapeHtml(n.name)}</div>
+          <div class="node-desc">${escapeHtml(n.desc)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ============================================================
+   通知(NPC 主动私聊)
+============================================================ */
+function renderNotifications() {
+  const el = document.getElementById('notifContent');
+  if (!state.notifications.length) {
+    el.innerHTML = `<div class="empty"><span class="empty-icon">🔔</span>暂时没有新消息</div>`;
+    return;
+  }
+  el.innerHTML = state.notifications.slice().reverse().map((n, i) => `
+    <div class="contact-row" onclick="readNotif(${state.notifications.length - 1 - i})">
+      <div class="contact-avatar">${getNpcAvatarHtml(n.from)}</div>
+      <div class="contact-info">
+        <div class="contact-name">${escapeHtml(n.from)} ${n.read ? '' : '🔴'}</div>
+        <div class="contact-last">${escapeHtml(n.preview)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function showNotifications() {
+  openSubpage('notifications');
+  state.notifications.forEach(n => n.read = true);
+  saveGame();
+  updateNotifBadge();
+}
+function readNotif(idx) {
+  const n = state.notifications[idx];
+  if (!n) return;
+  n.read = true;
+  saveGame();
+  updateNotifBadge();
+  closeSubpage('notifications');
+  // 进入私聊
+  if (!state.history.npc[n.from]) state.history.npc[n.from] = [];
+  state.history.npc[n.from].push({ role:'assistant', content: n.full });
+  openChat(n.from);
+  setTimeout(() => renderChatLog(), 200);
+}
+
+/* 触发 NPC 主动私聊：在剧情推进后调用 */
+async function tryNpcInitiateChat() {
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) return;
+  // 好感 >= 40 的NPC，随机挑一个
+  const candidates = Object.entries(state.affection)
+    .filter(([name, aff]) => aff.value >= 40 && NPC_DB[name])
+    .sort((a,b) => b[1].value - a[1].value);
+  if (!candidates.length) return;
+  if (Math.random() > 0.35) return; // 35%概率触发
+
+  const [name, aff] = candidates[Math.floor(Math.random() * Math.min(3, candidates.length))];
+  const npc = NPC_DB[name];
+
+  const prompt = `你扮演《哈利·波特》亲世代角色：${name}。
+【角色档案】
+${npc.persona}
+
+【当前关系】
+与玩家好感度：${aff.value}(${getStage(aff.value)})
+现在时间：${fmtTime()}
+玩家学院：${state.player.house}
+
+【任务】
+${name} 此刻主动想起玩家，决定私下给玩家发一条消息。
+- 要符合角色性格，不要OOC
+- 要贴合当前时间线(1971年秋，一年级)
+- 长度 20–60 字，口语化，像是朋友之间随口说的话
+- 好感 40-60：普通朋友式的主动开启话题
+- 好感 60-80：更亲近、更放松
+- 好感 80+：可以带一点暧昧或深情
+
+直接输出 ${name} 说的那句话，不要加引号，不要写旁白。`;
+
+  try {
+    const reply = await callAI([
+      { role:'system', content: prompt },
+      { role:'user', content:'(现在你要主动给玩家发一条消息。)' }
+    ]);
+    const text = reply.trim();
+    if (!text) return;
+
+    // 存入NPC历史记录
+    if (!state.history.npc[name]) state.history.npc[name] = [];
+    state.history.npc[name].push({ role:'assistant', content: text });
+    aff.log = aff.log || [];
+    aff.log.push({ text:'(主动找你)' + text, time: fmtTime() });
+
+    // 加入通知
+    state.notifications.push({
+      from: name,
+      preview: text.slice(0, 30) + (text.length > 30 ? '…' : ''),
+      full: text,
+      time: fmtTime(),
+      read: false
+    });
+    // 限制通知数量
+    if (state.notifications.length > 30) state.notifications = state.notifications.slice(-30);
+
+    saveGame(true);
+    updateNotifBadge();
+    toast(`💌 ${name} 给你发了一条消息`);
+  } catch(e) { console.warn('NPC initiate failed', e); }
+}
+
+/* ============================================================
+   API
+============================================================ */
+function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; } }
+function saveCfg(cfg) { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+async function callAI(messages, opts = {}) {
+  const cfg = getCfg();
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) throw new Error('请先在 ⚙️ 设置 中配置 API');
+  const url = cfg.baseUrl.replace(/\/$/, '') + '/chat/completions';
+  const body = { model: cfg.model, messages, temperature: parseFloat(cfg.temp ?? 0.9), stream: false };
+  if (opts.json) body.response_format = { type: 'json_object' };
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) { const t = await resp.text(); throw new Error(`API ${resp.status}: ${t.slice(0,150)}`); }
+  const data = await resp.json();
+  return data.choices[0].message.content;
+}
+
+/* ============================================================
+   主叙事
+============================================================ */
+const WORLDBOOK = `你是《霍格沃兹人生模拟器·亲世代》的游戏主持人(GM)。
+严格遵循 J.K.罗琳原著与电影设定，时间范围 1971–1981。
+玩家是霍格沃茨的一名新生，与詹姆、小天狼星、卢平、彼得、莉莉、斯内普同届入学。
+
+【核心法则】
+1. 时空锚定：严格遵循原著时间线，重大节点不可无故更改。
+2. 视觉真实：所有角色外貌按电影形象描述。
+3. 魔法自洽：施法有代价。
+4. 叙事沉浸：环境描写至少包含三个感官细节；对话贴合角色口吻。
+5. 世界自治：NPC 有独立生活，不围着玩家转。
+6. 命运可控：玩家可改写命运，但会触发连锁反应与世界线变动率。
+7. 玩家主权：不替玩家做决定，不预知未来，不强制情感。
+
+【角色扮演要求 · 极其重要】
+- NPC 必须有灵魂、有情绪、有独立意志，不许冷漠、不许呆板、不许变成只会附和的工具人。
+- 每个 NPC 都要严格忠于原著与电影里的性格：斯内普阴沉讽刺，小天狼星爽朗直接，卢平温和克制，詹姆张扬护友，莉莉善良坚定，雷古勒斯忧郁敏感，小巴蒂优雅危险。
+- 不许 OOC。如果角色在原著里不会说某句话，就不要让他说。
+
+【输出规则】
+- 用第二人称"你"叙事。
+- 每次回复 150–400 字，小说化语言。
+- 不要写选项菜单，直接叙事；让玩家自己输入行动。
+- 如果触发 CG/好感度变化/时间推进，在正文后另起一行输出 JSON 块：
+  {"delta": {"time_min": 15, "affection": {"莉莉·伊万斯": 2}, "worldline": 0.5, "cg": "CG-004 走廊里的第一百次对视"}}
+  如果没有变化就省略这个 JSON 块。
+- 不替玩家说话或做决定。`;
+
+function buildNarratorContext() {
+  const s = state, p = s.player;
+  const inScene = s.story.slice(-6).map(x => `[${x.role}] ${(x.text || '').slice(0, 100)}`).join('\n');
+  return `当前状态：
+时间：${fmtTime()}
+世界线变动率：${s.worldline.toFixed(2)}%
+玩家：${p.name}(学院：${p.house || '未分院'}，血统：${p.bloodline}，性格：${p.personality})
+外貌：${p.hair}，${p.eyes}，${p.height}，${p.build}
+魔杖：${p.wand}
+HP ${p.hp}/100  MP ${p.mp}/100  SP ${p.sp}/100
+恋爱状态：${p.romance.status}
+
+最近剧情：
+${inScene}
+
+请基于上述状态继续叙事。`;
+}
+
+async function submitAction() {
+  const input = document.getElementById('actionInput'), text = input.value.trim();
+  if (!text) return; input.value = ''; await doNarrate(text);
+}
+function quickAction(text) { document.getElementById('actionInput').value = text; submitAction(); }
+
+async function doNarrate(playerAction) {
+  state.story.push({ role:'action', text: playerAction, time: fmtTime() });
+  renderStory(); saveGame();
+  const stream = document.getElementById('storyStream'), writing = document.createElement('div');
+  writing.className = 'writing';
+  writing.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div> 羊皮纸书写中…`;
+  stream.appendChild(writing); stream.scrollTop = stream.scrollHeight;
+  document.getElementById('submitBtn').disabled = true;
+  try {
+    const messages = [
+      { role:'system', content: WORLDBOOK + '\n\n' + buildNarratorContext() },
+      ...state.history.narrator.slice(-10),
+      { role:'user', content: playerAction }
+    ];
+    const reply = await callAI(messages);
+    writing.remove();
+    let narrative = reply;
+    const jsonMatch = reply.match(/\{[\s\S]*"delta"[\s\S]*\}\s*$/);
+    if (jsonMatch) {
+      narrative = reply.replace(jsonMatch[0], '').trim();
+      try { applyDelta(JSON.parse(jsonMatch[0]).delta); } catch(e) {}
+    }
+    state.story.push({ role:'narration', text: narrative, time: fmtTime() });
+    state.history.narrator.push({ role:'user', content: playerAction });
+    state.history.narrator.push({ role:'assistant', content: narrative });
+    if (state.story.length > 300) state.story = state.story.slice(-250);
+    renderStory(); renderHome(); saveGame(true);
+    // 剧情推进后，尝试触发 NPC 主动私聊
+    if (Math.random() < 0.5) tryNpcInitiateChat();
+  } catch(e) {
+    writing.remove();
+    state.story.push({ role:'narration', text:'⚠️ ' + e.message, time: fmtTime() });
+    renderStory();
+  } finally {
+    document.getElementById('submitBtn').disabled = false;
+  }
+}
+
+function applyDelta(delta) {
+  if (delta.time_min) advanceTime(delta.time_min);
+  if (delta.affection) {
+    for (const [name, v] of Object.entries(delta.affection)) {
+      if (!state.affection[name]) state.affection[name] = { value:0, log:[] };
+      state.affection[name].value = Math.max(-100, Math.min(100, state.affection[name].value + v));
+    }
+  }
+  if (delta.worldline) state.worldline = Math.max(0, state.worldline + delta.worldline);
+  if (delta.cg) state.story.push({ role:'cg', title: delta.cg });
+  // 检查世界线节点是否被改写
+  const year = state.time.year;
+  const node = WORLDLINE_NODES.find(n => n.year === year);
+  if (node && !state.rewrittenNodes.includes(node.key)) {
+    state.rewrittenNodes.push(node.key);
+  }
+}
+
+/* ============================================================
+   档案
+============================================================ */
+function renderProfile() {
+  const p = state.player;
+  document.getElementById('profileContent').innerHTML = `
+    <div class="ob-avatar-upload">
+      <div class="ob-avatar-preview">${p.avatar ? `<img src="${p.avatar}">` : '🪄'}</div>
+      <label class="upload-btn">📷 上传头像<input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(event)"></label>
+    </div>
+    <div class="detail-section"><h4>👤 基础信息</h4>
+      <div class="info-row"><span class="lbl">姓名</span><span class="val">${escapeHtml(p.name || '—')}</span></div>
+      <div class="info-row"><span class="lbl">学院</span><span class="val">${p.house ? houseTag(p.house) : '未分院'}</span></div>
+      <div class="info-row"><span class="lbl">生日</span><span class="val">${escapeHtml(p.birthday || '—')}</span></div>
+      <div class="info-row"><span class="lbl">血统</span><span class="val">${escapeHtml(p.bloodline || '—')}</span></div>
+    </div>
+    <div class="detail-section"><h4>🩸 外貌</h4>
+      <div class="info-row"><span class="lbl">外貌</span><span class="val">${escapeHtml(p.hair || '—')}发 · ${escapeHtml(p.eyes || '—')}眼 · ${escapeHtml(p.height || '—')} · ${escapeHtml(p.build || '—')}</span></div>
+    </div>
+    <div class="detail-section"><h4>🧠 性格与魔杖</h4>
+      <div class="info-row"><span class="lbl">性格</span><span class="val">${escapeHtml(p.personality || '—')}</span></div>
+      <div class="info-row"><span class="lbl">魔杖</span><span class="val">${escapeHtml(p.wand || '—')}</span></div>
+    </div>
+    <div class="detail-actions"><button class="big-btn accent" onclick="openOnboarding()">✏️ 重新编辑</button></div>
+  `;
+}
+async function uploadAvatar(event) {
+  const file = event.target.files[0]; if (!file) return;
+  try {
+    const dataURL = await compressImage(file, 200, 200);
+    state.player.avatar = dataURL;
+    saveGame(true);
+    renderProfile(); renderHome();
+    toast('✅ 头像已更新');
+  } catch(e) { alert('上传失败：' + e.message); }
+}
+async function uploadAvatarOb(event) {
+  const file = event.target.files[0]; if (!file) return;
+  try {
+    const dataURL = await compressImage(file, 200, 200);
+    state.player.avatar = dataURL;
+    const prev = document.getElementById('obAvatarPreview');
+    if (prev) prev.innerHTML = `<img src="${dataURL}">`;
+  } catch(e) { alert('上传失败：' + e.message); }
+}
+async function uploadNpcImageFile(event, name, type) {
+  const file = event.target.files[0]; if (!file) return;
+  try {
+    const dataURL = await compressImage(file, type === 'avatar' ? 200 : 500, type === 'avatar' ? 200 : 666);
+    if (!state.npcImages) state.npcImages = {};
+    if (!state.npcImages[name]) state.npcImages[name] = {};
+    state.npcImages[name][type] = dataURL;
+    saveGame(true);
+    renderCharacters();
+    if (state.socialTab === 'feed') renderFeed();
+    if (state.socialTab === 'contacts') renderContacts();
+    toast(type === 'portrait' ? '✅ 立绘已上传' : '✅ 头像已上传');
+  } catch(e) { alert('上传失败：' + e.message); }
+}
+
+/* ============================================================
+   捏人(5步：身份 / 血统 / 学院 / 外貌 / 性格)
+============================================================ */
+let obStep = 0; const OB_TOTAL = 5;
+function openOnboarding() { obStep = 0; document.getElementById('onboarding').classList.add('active'); renderObStep(); }
+function renderObStep() {
+  const content = document.getElementById('obContent');
+  document.getElementById('obStep').textContent = `第 ${obStep+1} / ${OB_TOTAL} 步`;
+  document.getElementById('obProgress').style.width = ((obStep+1)/OB_TOTAL*100) + '%';
+  document.getElementById('obPrev').style.display = obStep > 0 ? 'flex' : 'none';
+  document.getElementById('obNext').textContent = obStep === OB_TOTAL-1 ? '✨ 完成' : '下一步 →';
+  const p = state.player;
+
+  if (obStep === 0) {
+    content.innerHTML = `<div class="ob-title">你是谁？</div><div class="ob-subtitle">1971年的秋天，你的魔法人生即将开始。</div>
+      <div class="ob-field"><label>姓名</label><input type="text" id="obName" placeholder="例如：艾拉·诺伍德" value="${escapeHtml(p.name || '')}"></div>
+      <div class="ob-field"><label>生日</label><input type="text" id="obBirthday" placeholder="例如：7月15日" value="${escapeHtml(p.birthday || '')}"></div>`;
+  } else if (obStep === 1) {
+    content.innerHTML = `<div class="ob-title">你的血统</div><div class="ob-subtitle">在亲世代，血统会成为你的标签——但你也可以打破它。</div>
+      <div class="ob-field"><label>血统</label><div class="ob-options" data-key="bloodline">${['纯血统','混血统','麻瓜出身','未知'].map(v => `<button class="ob-option ${p.bloodline===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>`;
+  } else if (obStep === 2) {
+    content.innerHTML = `<div class="ob-title">你的学院</div><div class="ob-subtitle">分院帽会把你分到哪里？<br>不同学院会影响你与其他角色的初始关系。</div>
+      <div class="ob-field"><label>选择学院</label>
+        <div class="ob-options" data-key="house" style="grid-template-columns:1fr 1fr;">
+          ${['格兰芬多','斯莱特林','赫奇帕奇','拉文克劳'].map(v => {
+            const cls = houseClass(v);
+            const emoji = { '格兰芬多':'🦁','斯莱特林':'🐍','赫奇帕奇':'🦡','拉文克劳':'🦅' }[v];
+            return `<button class="ob-option house-${cls} ${p.house===v?'selected':''}" data-val="${v}">${emoji} ${v}</button>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="detail-section" style="font-size:12px;line-height:1.7;">
+        <div style="color:var(--ink-light);font-weight:700;">📌 学院关系提示</div>
+        <div style="margin-top:6px;">• 同学院 → 初始好感 +15</div>
+        <div>• 格兰芬多 ↔ 斯莱特林 → 初始好感 -20</div>
+        <div>• 赫奇帕奇 / 拉文克劳 之间 → 初始好感 +5</div>
+      </div>`;
+  } else if (obStep === 3) {
+    content.innerHTML = `<div class="ob-title">你的外貌</div><div class="ob-subtitle">在霍格沃茨，第一印象很重要。</div>
+      <div class="ob-avatar-upload">
+        <div class="ob-avatar-preview" id="obAvatarPreview">${p.avatar ? `<img src="${p.avatar}">` : '🪄'}</div>
+        <label class="upload-btn">📷 上传头像<input type="file" accept="image/*" style="display:none" onchange="uploadAvatarOb(event)"></label>
+      </div>
+      <div class="ob-field"><label>发色</label><div class="ob-options" data-key="hair">${['黑色','棕色','金色','红色','银色','其他'].map(v => `<button class="ob-option ${p.hair===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>
+      <div class="ob-field"><label>瞳色</label><div class="ob-options" data-key="eyes">${['黑色','棕色','蓝色','绿色','灰色','其他'].map(v => `<button class="ob-option ${p.eyes===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>
+      <div class="ob-field"><label>身高</label><div class="ob-options" data-key="height">${['娇小','中等','高挑'].map(v => `<button class="ob-option ${p.height===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>
+      <div class="ob-field"><label>体型</label><div class="ob-options" data-key="build">${['瘦削','匀称','健壮'].map(v => `<button class="ob-option ${p.build===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>`;
+  } else if (obStep === 4) {
+    content.innerHTML = `<div class="ob-title">你的性格</div><div class="ob-subtitle">分院帽会看到你的内心。</div>
+      <div class="ob-field"><label>核心性格</label><div class="ob-options" data-key="personality">${['勇敢直率','聪慧冷静','温柔忠诚','野心勃勃','神秘疏离','活泼开朗'].map(v => `<button class="ob-option ${p.personality===v?'selected':''}" data-val="${v}">${v}</button>`).join('')}</div></div>
+      <div class="ob-field"><label>魔杖</label><div class="ob-options" data-key="wand" style="grid-template-columns:1fr;">${['冬青木 · 凤凰羽毛 · 11英寸','柳木 · 龙心脏腱索 · 10¼英寸','黑刺李木 · 龙心脏腱索 · 13¼英寸','桃花心木 · 凤凰羽毛 · 11英寸','樱桃木 · 独角兽毛 · 10¾英寸','柏木 · 独角兽毛 · 10¼英寸'].map(v => `<button class="ob-option ${p.wand===v?'selected':''}" data-val="${v}" style="font-size:11.5px;padding:10px;">${v}</button>`).join('')}</div></div>`;
+  }
+  content.querySelectorAll('.ob-options').forEach(group => {
+    const key = group.dataset.key;
+    group.querySelectorAll('.ob-option').forEach(btn => {
+      btn.onclick = () => {
+        group.querySelectorAll('.ob-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.player[key] = btn.dataset.val;
+      };
+    });
+  });
+}
+function obNext() {
+  const p = state.player;
+  if (obStep === 0) {
+    const name = document.getElementById('obName').value.trim();
+    const bd = document.getElementById('obBirthday').value.trim();
+    if (!name) return alert('请填写姓名');
+    p.name = name; p.birthday = bd;
+  }
+  if (obStep === 1) { if (!p.bloodline) return alert('请选择血统'); }
+  if (obStep === 2) { if (!p.house) return alert('请选择学院'); }
+  if (obStep === 3) {
+    if (!p.hair || !p.eyes || !p.height || !p.build) return alert('请完成外貌选择');
+  }
+  if (obStep === 4) {
+    if (!p.personality) return alert('请选择性格');
+    if (!p.wand) return alert('请选择魔杖');
+  }
+  if (obStep === OB_TOTAL - 1) { finishOnboarding(); return; }
+  obStep++; renderObStep();
+}
+function obPrev() { if (obStep > 0) { obStep--; renderObStep(); } }
+
+function finishOnboarding() {
+  const wasOnboarded = state.onboarded;
+  state.onboarded = true;
+  document.getElementById('onboarding').classList.remove('active');
+
+  // 根据学院调整所有NPC的初始好感度(仅首次捏人时应用)
+  if (!wasOnboarded) {
+    Object.keys(NPC_DB).forEach(name => {
+      const npc = NPC_DB[name];
+      const delta = houseAffinity(state.player.house, npc.house);
+      if (!state.affection[name]) state.affection[name] = { value:0, log:[] };
+      state.affection[name].value = Math.max(-100, Math.min(100, state.affection[name].value + delta));
+      if (delta !== 0) {
+        state.affection[name].log.push({
+          text: delta > 0 ? `【分院结果】同学院，好感 +${delta}` : `【分院结果】学院对立，好感 ${delta}`,
+          time: fmtTime()
+        });
+      }
+    });
+  }
+
+  if (!state.story.length) {
+    const p = state.player;
+    state.story.push({ role:'narration', time: fmtTime(), text:`1971年9月1日，黄昏。霍格沃茨特快列车缓缓停靠在霍格莫德站台。${p.name}随着人流走下火车，冷冽的夜风裹着松脂与湖水的气息扑面而来。远处的城堡灯火通明，像一只沉睡的巨兽睁开了眼睛。` });
+    state.story.push({ role:'narration', time: fmtTime(), text:`一个高大的身影举着提灯，在站台尽头高喊："一年级新生！一年级新生到这边来！"——那是鲁伯·海格。你即将穿过黑湖，进入那座你只在书里读过的城堡。` });
+    state.story.push({ role:'narration', time: fmtTime(), text:`礼堂的长桌上摆满了金色的餐盘。麦格教授把一顶破旧的尖顶帽放在四脚凳上。分院帽裂开一道缝，唱起了那首古老的歌。当它喊出"${p.house}"时，属于你的长桌爆发出欢呼。` });
+    state.story.push({ role:'action', time: fmtTime(), text:`(在下方输入你想做的任何事)` });
+  }
+  saveGame(true);
+  renderHome(); renderStory();
+  toast(`✨ 欢迎来到${state.player.house}，${state.player.name}`);
+}
+
+/* ============================================================
+   存档
+============================================================ */
+let saveTimeout = null;
+function saveGame(immediate = false) {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  const doSave = () => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e) {
+      console.error('Save failed:', e);
+      if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
+        toast('⚠️ 存档空间不足，请导出存档后清理');
+      }
+    }
+  };
+  if (immediate) { doSave(); toast('💾 已保存'); }
+  else saveTimeout = setTimeout(doSave, 400);
+}
+function loadGame() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return alert('没有找到存档');
+  try {
+    state = JSON.parse(raw);
+    initGame();
+    renderHome(); renderStory(); renderCharacters(); renderBag(); renderSocial();
+    toast('📂 读取成功');
+  } catch(e) { alert('读取失败：' + e.message); }
+}
+function exportSave() {
+  try {
+    const data = JSON.stringify(state);
+    const blob = new Blob([data], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hogwarts_save_${state.player.name || 'player'}_${Date.now()}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('📤 存档已导出');
+  } catch(e) { alert('导出失败：' + e.message); }
+}
+function copySave() {
+  const data = JSON.stringify(state);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(data).then(() => toast('📋 存档已复制到剪贴板'))
+      .catch(err => alert('复制失败，请使用导出功能。\n' + err.message));
+  } else {
+    prompt('复制以下存档内容：', data);
+  }
+}
+function importSave(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.player || !data.affection) throw new Error('存档格式不正确');
+      state = data;
+      initGame();
+      saveGame(true);
+      renderHome(); renderStory(); renderCharacters(); renderBag(); renderSocial();
+      toast('📥 存档导入成功');
+    } catch(err) { alert('导入失败：' + err.message); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function restartOnboarding() {
+  if (!confirm('重新捏人将清空当前剧情与好感度，确定吗？')) return;
+  if (!confirm('再次确认：所有进度将永久删除！')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+/* ============================================================
+   设置
+============================================================ */
+function loadSettingsForm() {
+  const cfg = getCfg();
+  document.getElementById('cfgBaseUrl').value = cfg.baseUrl || '';
+  document.getElementById('cfgApiKey').value = cfg.apiKey || '';
+  document.getElementById('cfgModel').value = cfg.model || '';
+  document.getElementById('cfgTemp').value = cfg.temp ?? 0.9;
+}
+function saveSettings() {
+  saveCfg({
+    baseUrl: document.getElementById('cfgBaseUrl').value.trim(),
+    apiKey: document.getElementById('cfgApiKey').value.trim(),
+    model: document.getElementById('cfgModel').value.trim(),
+    temp: parseFloat(document.getElementById('cfgTemp').value) || 0.9
+  });
+  toast('✅ 设置已保存');
+}
+
+/* ============================================================
+   启动
+============================================================ */
+function boot() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const loaded = JSON.parse(raw);
+      if (loaded && loaded.player) state = loaded;
+    } catch(e) { console.warn('Load failed', e); }
+  }
+  initGame();
+  loadSettingsForm();
+
+  if (!state.onboarded) {
+    openOnboarding();
+  } else {
+    renderHome(); renderStory(); renderCharacters(); renderBag();
+    switchSocialTab('feed');
+    updateNotifBadge();
+  }
+}
+window.addEventListener('beforeunload', () => {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+});
+
+// Modal 点击遮罩关闭
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+boot();
+</script>
+</body>
+</html>
